@@ -16,7 +16,6 @@ function imageUrl(path){
   return `${SUPABASE_URL}/storage/v1/object/public/school-media/${String(path).replace(/^\/+/, "")}`;
 }
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
-
 function stripHtml(v){return String(v??"").replace(/<[^>]*>/g,"");}
 
 function card(item, type){
@@ -34,47 +33,35 @@ function teacherCard(t){
   const subject=esc(t.subject||"");
   const photo=imageUrl(t.photo_path);
   const id=esc(t.id);
-  return `<article class="teacher-card">
-    <img class="teacher-photo" src="${photo}" alt="Foto ${name}" onerror="this.src='./logo%20sekolah.jpeg'">
-    <div class="teacher-body">
-      <span class="teacher-role">${role}</span>
-      <h3>${name}</h3>
-      <p class="teacher-meta">${subject ? `<b>Mata Pelajaran:</b> ${subject}` : "Tenaga pendidik dan kependidikan SMPN 5 Gegerbitung."}</p>
-      <div class="teacher-detail"><button class="btn btn-soft" data-teacher-id="${id}">Lihat Profil Lengkap</button></div>
-    </div>
-  </article>`;
+  return `<article class="teacher-card"><img class="teacher-photo" src="${photo}" alt="Foto ${name}" onerror="this.src='./logo%20sekolah.jpeg'"><div class="teacher-body"><span class="teacher-role">${role}</span><h3>${name}</h3><p class="teacher-meta">${subject ? `<b>Mata Pelajaran:</b> ${subject}` : "Tenaga pendidik dan kependidikan SMPN 5 Gegerbitung."}</p><div class="teacher-detail"><button class="btn btn-soft" data-teacher-id="${id}">Lihat Profil Lengkap</button></div></div></article>`;
 }
 
 function showTeacher(t){
   const body=el("teacherModalBody");
   if(!body) return;
   const photo=imageUrl(t.photo_path);
-  body.innerHTML=`<div class="teacher-profile">
-    <img src="${photo}" alt="Foto ${esc(t.name||"Guru/Tendik")}" onerror="this.src='./logo%20sekolah.jpeg'">
-    <div>
-      <span class="teacher-role">${esc(t.position||"Guru/Tendik")}</span>
-      <h2>${esc(t.name||"Nama belum diisi")}</h2>
-      <div class="teacher-info">
-        <div><b>NIP</b>${esc(t.nip||"-")}</div>
-        <div><b>NUPTK</b>${esc(t.nuptk||"-")}</div>
-        <div><b>Jenis Kelamin</b>${t.gender==="L"?"Laki-laki":t.gender==="P"?"Perempuan":"-"}</div>
-        <div><b>Mata Pelajaran</b>${esc(t.subject||"-")}</div>
-        <div><b>Pendidikan</b>${esc(t.education||"-")}</div>
-        ${t.email?`<div><b>Email</b>${esc(t.email)}</div>`:""}
-        ${t.phone?`<div><b>Telepon</b>${esc(t.phone)}</div>`:""}
-      </div>
-      ${t.bio?`<p style="color:#64748b;line-height:1.8;margin-top:18px">${esc(t.bio).replace(/\n/g,"<br>")}</p>`:""}
-    </div>
-  </div>`;
+  body.innerHTML=`<div class="teacher-profile"><img src="${photo}" alt="Foto ${esc(t.name||"Guru/Tendik")}" onerror="this.src='./logo%20sekolah.jpeg'"><div><span class="teacher-role">${esc(t.position||"Guru/Tendik")}</span><h2>${esc(t.name||"Nama belum diisi")}</h2><div class="teacher-info"><div><b>NIP</b>${esc(t.nip||"-")}</div><div><b>NUPTK</b>${esc(t.nuptk||"-")}</div><div><b>Jenis Kelamin</b>${t.gender==="L"?"Laki-laki":t.gender==="P"?"Perempuan":"-"}</div><div><b>Mata Pelajaran</b>${esc(t.subject||"-")}</div><div><b>Pendidikan</b>${esc(t.education||"-")}</div>${t.email?`<div><b>Email</b>${esc(t.email)}</div>`:""}${t.phone?`<div><b>Telepon</b>${esc(t.phone)}</div>`:""}</div>${t.bio?`<p style="color:#64748b;line-height:1.8;margin-top:18px">${esc(t.bio).replace(/\n/g,"<br>")}</p>`:""}</div></div>`;
   el("teacherModal").classList.add("show");
   el("teacherModal").setAttribute("aria-hidden","false");
 }
-function closeTeacher(){
-  const m=el("teacherModal");
-  if(m){m.classList.remove("show");m.setAttribute("aria-hidden","true")}
+function closeTeacher(){const m=el("teacherModal");if(m){m.classList.remove("show");m.setAttribute("aria-hidden","true")}}
+
+function ensureNewsModal(){
+  if(el("newsModal")) return;
+  const style=document.createElement("style");
+  style.textContent=`#newsModal{position:fixed;inset:0;background:rgba(15,23,42,.72);display:none;place-items:center;padding:20px;z-index:9999}#newsModal.show{display:grid}#newsModal .news-modal-card{width:min(820px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:24px;position:relative;padding:30px;box-shadow:0 25px 70px rgba(0,0,0,.25)}#newsModal .news-modal-close{position:absolute;right:18px;top:18px;border:0;background:#f1f5f9;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:22px;z-index:2}#newsModal .news-modal-img{width:100%;max-height:380px;object-fit:cover;border-radius:18px;margin-bottom:20px}#newsModal .news-modal-title{font-family:"Plus Jakarta Sans",sans-serif;font-size:32px;line-height:1.25;margin:15px 45px 8px 0}#newsModal .news-modal-date{font-size:13px;color:#64748b;margin-bottom:20px}#newsModal .news-modal-content{font-size:15px;line-height:1.9;color:#334155}#newsModal .tag{display:inline-block}@media(max-width:560px){#newsModal{padding:10px}#newsModal .news-modal-card{padding:20px}#newsModal .news-modal-title{font-size:25px}#newsModal .news-modal-img{max-height:280px}}`;
+  document.head.appendChild(style);
+  const modal=document.createElement("div");
+  modal.id="newsModal";
+  modal.setAttribute("aria-hidden","true");
+  modal.innerHTML=`<div class="news-modal-card"><button class="news-modal-close" id="newsModalClose" aria-label="Tutup berita">×</button><div id="newsModalBody"></div></div>`;
+  document.body.appendChild(modal);
+  el("newsModalClose").addEventListener("click",closeNews);
+  modal.addEventListener("click",e=>{if(e.target===modal)closeNews()});
 }
 
 function showNews(item){
+  ensureNewsModal();
   const modal=el("newsModal");
   const body=el("newsModalBody");
   if(!modal || !body || !item) return;
@@ -83,32 +70,23 @@ function showNews(item){
   const date=item.published_at ? new Date(item.published_at).toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"}) : "";
   const category=esc(item.category||"Berita Sekolah");
   const content=stripHtml(item.content||item.excerpt||item.description||"Informasi sekolah.").replace(/\n/g,"<br>");
-  body.innerHTML=`
-    ${img?`<img class="news-modal-img" src="${imageUrl(img)}" alt="${title}" onerror="this.src='./logo%20sekolah.jpeg'">`:""}
-    <span class="tag">${category}</span>
-    <h2 class="news-modal-title">${title}</h2>
-    ${date?`<div class="news-modal-date">${date}</div>`:""}
-    <div class="news-modal-content">${content}</div>`;
+  body.innerHTML=`${img?`<img class="news-modal-img" src="${imageUrl(img)}" alt="${title}" onerror="this.src='./logo%20sekolah.jpeg'">`:""}<span class="tag">${category}</span><h2 class="news-modal-title">${title}</h2>${date?`<div class="news-modal-date">${date}</div>`:""}<div class="news-modal-content">${content}</div>`;
   modal.classList.add("show");
   modal.setAttribute("aria-hidden","false");
   document.body.style.overflow="hidden";
 }
-function closeNews(){
-  const m=el("newsModal");
-  if(m){m.classList.remove("show");m.setAttribute("aria-hidden","true");document.body.style.overflow=""}
-}
+function closeNews(){const m=el("newsModal");if(m){m.classList.remove("show");m.setAttribute("aria-hidden","true");document.body.style.overflow=""}}
 
 async function load(){
   if(!configured){
-    el("newsGrid").innerHTML = `<div class="empty">Supabase belum dikonfigurasi.</div>`;
-    el("activityGrid").innerHTML = `<div class="empty">Data kegiatan akan tampil setelah Supabase tersambung.</div>`;
-    el("achievementGrid").innerHTML = `<div class="empty">Data prestasi akan tampil setelah Supabase tersambung.</div>`;
-    el("galleryGrid").innerHTML = `<div class="empty">Galeri akan tampil setelah Supabase tersambung.</div>`;
-    el("teacherGrid").innerHTML = `<div class="empty">Data guru & tendik akan tampil setelah Supabase tersambung.</div>`;
+    el("newsGrid").innerHTML=`<div class="empty">Supabase belum dikonfigurasi.</div>`;
+    el("activityGrid").innerHTML=`<div class="empty">Data kegiatan akan tampil setelah Supabase tersambung.</div>`;
+    el("achievementGrid").innerHTML=`<div class="empty">Data prestasi akan tampil setelah Supabase tersambung.</div>`;
+    el("galleryGrid").innerHTML=`<div class="empty">Galeri akan tampil setelah Supabase tersambung.</div>`;
+    el("teacherGrid").innerHTML=`<div class="empty">Data guru & tendik akan tampil setelah Supabase tersambung.</div>`;
     return;
   }
-
-  const [{data:school},{data:news},{data:cur},{data:stu},{data:ach},{data:teachers,error:teacherError}] = await Promise.all([
+  const [{data:school},{data:news},{data:cur},{data:stu},{data:ach},{data:teachers,error:teacherError}]=await Promise.all([
     supabase.from("school_settings").select("*").limit(1).maybeSingle(),
     supabase.from("news").select("*").eq("status","published").order("published_at",{ascending:false}).limit(6),
     supabase.from("curriculum_activities").select("*").eq("status","published").order("activity_date",{ascending:false}).limit(6),
@@ -116,51 +94,30 @@ async function load(){
     supabase.from("achievements").select("*").order("year",{ascending:false}).limit(6),
     supabase.from("teachers").select("*").eq("is_active",true).order("sort_order",{ascending:true}).order("name",{ascending:true})
   ]);
-
-  const s = school || fallback;
-  el("schoolName").textContent = s.school_name || fallback.school_name;
-  el("principalName").textContent = s.principal_name || fallback.principal_name;
-  el("vision").textContent = s.vision || fallback.vision;
-  el("mission").textContent = s.mission || fallback.mission;
-  el("principalMessage").textContent = s.principal_message || fallback.principal_message;
-  el("statTeachers").textContent = teacherError ? "-" : (teachers?.length ?? 0);
-
-  const studentCount = await supabase.from("students").select("id",{count:"exact",head:true});
-  el("statStudents").textContent = studentCount.count ?? "-";
-  el("statAchievements").textContent = ach?.length ?? "-";
-  el("statActivities").textContent = ((cur||[]).length + (stu||[]).length) || "-";
-
-  el("teacherGrid").innerHTML = teacherError
-    ? `<div class="empty">Kolom foto guru belum siap. Jalankan SQL pada file <b>supabase_teachers_photo.sql</b>, lalu muat ulang website.</div>`
-    : (teachers?.length ? teachers.map(teacherCard).join("") : `<div class="empty">Belum ada data guru & tendik yang aktif.</div>`);
-
-  if(!teacherError){
-    el("teacherGrid").querySelectorAll("[data-teacher-id]").forEach(btn=>{
-      btn.addEventListener("click",()=>showTeacher(teachers.find(t=>String(t.id)===btn.dataset.teacherId)));
-    });
-  }
-
-  el("newsGrid").innerHTML = news?.length ? news.map(x=>card(x,"news")).join("") : `<div class="empty">Belum ada berita.</div>`;
-  if(news?.length){
-    el("newsGrid").querySelectorAll("[data-news-id]").forEach(cardEl=>{
-      const item=news.find(x=>String(x.id)===cardEl.dataset.newsId);
-      cardEl.addEventListener("click",()=>showNews(item));
-      cardEl.addEventListener("keydown",e=>{if(e.key==="Enter" || e.key===" "){e.preventDefault();showNews(item)}});
-    });
-  }
-
-  const activities = [...(cur||[]),...(stu||[])].slice(0,6);
-  el("activityGrid").innerHTML = activities.length ? activities.map(x=>card(x,"activity")).join("") : `<div class="empty">Belum ada kegiatan.</div>`;
-  el("achievementGrid").innerHTML = ach?.length ? ach.map(x=>card(x,"achievement")).join("") : `<div class="empty">Belum ada prestasi.</div>`;
-
-  const {data:albums} = await supabase.from("gallery_albums").select("*,gallery_images(*)").eq("is_published",true).order("event_date",{ascending:false}).limit(8);
-  const imgs = (albums||[]).flatMap(a=>a.gallery_images||[]).slice(0,8);
-  el("galleryGrid").innerHTML = imgs.length ? imgs.map(i=>`<img src="${imageUrl(i.image_path)}" alt="${esc(i.caption||'Galeri sekolah')}" onerror="this.src='./logo%20sekolah.jpeg'">`).join("") : `<div class="empty">Belum ada foto galeri.</div>`;
+  const s=school||fallback;
+  el("schoolName").textContent=s.school_name||fallback.school_name;
+  el("principalName").textContent=s.principal_name||fallback.principal_name;
+  el("vision").textContent=s.vision||fallback.vision;
+  el("mission").textContent=s.mission||fallback.mission;
+  el("principalMessage").textContent=s.principal_message||fallback.principal_message;
+  el("statTeachers").textContent=teacherError?"-":(teachers?.length??0);
+  const studentCount=await supabase.from("students").select("id",{count:"exact",head:true});
+  el("statStudents").textContent=studentCount.count??"-";
+  el("statAchievements").textContent=ach?.length??"-";
+  el("statActivities").textContent=((cur||[]).length+(stu||[]).length)||"-";
+  el("teacherGrid").innerHTML=teacherError?`<div class="empty">Kolom foto guru belum siap. Jalankan SQL pada file <b>supabase_teachers_photo.sql</b>, lalu muat ulang website.</div>`:(teachers?.length?teachers.map(teacherCard).join(""):`<div class="empty">Belum ada data guru & tendik yang aktif.</div>`);
+  if(!teacherError)el("teacherGrid").querySelectorAll("[data-teacher-id]").forEach(btn=>btn.addEventListener("click",()=>showTeacher(teachers.find(t=>String(t.id)===btn.dataset.teacherId))));
+  el("newsGrid").innerHTML=news?.length?news.map(x=>card(x,"news")).join(""):`<div class="empty">Belum ada berita.</div>`;
+  if(news?.length)el("newsGrid").querySelectorAll("[data-news-id]").forEach(cardEl=>{const item=news.find(x=>String(x.id)===cardEl.dataset.newsId);cardEl.addEventListener("click",()=>showNews(item));cardEl.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();showNews(item)}})});
+  const activities=[...(cur||[]),...(stu||[])].slice(0,6);
+  el("activityGrid").innerHTML=activities.length?activities.map(x=>card(x,"activity")).join(""):`<div class="empty">Belum ada kegiatan.</div>`;
+  el("achievementGrid").innerHTML=ach?.length?ach.map(x=>card(x,"achievement")).join(""):`<div class="empty">Belum ada prestasi.</div>`;
+  const {data:albums}=await supabase.from("gallery_albums").select("*,gallery_images(*)").eq("is_published",true).order("event_date",{ascending:false}).limit(8);
+  const imgs=(albums||[]).flatMap(a=>a.gallery_images||[]).slice(0,8);
+  el("galleryGrid").innerHTML=imgs.length?imgs.map(i=>`<img src="${imageUrl(i.image_path)}" alt="${esc(i.caption||'Galeri sekolah')}" onerror="this.src='./logo%20sekolah.jpeg'">`).join(""):`<div class="empty">Belum ada foto galeri.</div>`;
 }
 
 el("teacherModalClose")?.addEventListener("click",closeTeacher);
 el("teacherModal")?.addEventListener("click",e=>{if(e.target.id==="teacherModal")closeTeacher()});
-el("newsModalClose")?.addEventListener("click",closeNews);
-el("newsModal")?.addEventListener("click",e=>{if(e.target.id==="newsModal")closeNews()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeTeacher();closeNews()}});
 load().catch(err=>console.error(err));
