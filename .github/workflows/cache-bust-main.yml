@@ -1,0 +1,46 @@
+name: Cache Bust main.js
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  cache-bust:
+    runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.head_commit.message, 'Cache bust main.js') }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Force latest main.js
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          # Selalu ubah URL main.js menjadi URL baru berdasarkan commit pemicu.
+          s2 = re.sub(
+              r'<script\s+type=["\']module["\']\s+src=["\']\.\/main\.js(?:\?[^"\']*)?["\']\s*></script>',
+              '<script type="module" src="./main.js?v=${{ github.sha }}"></script>',
+              s,
+              count=1
+          )
+
+          if s2 == s:
+              raise SystemExit('Tag main.js tidak ditemukan di index.html')
+
+          p.write_text(s2, encoding='utf-8')
+          PY
+
+      - name: Commit cache bust
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Cache bust main.js"
+          git push
