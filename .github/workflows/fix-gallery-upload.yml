@@ -1,0 +1,33 @@
+name: Fix Upload Foto Galeri
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch admin.js
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('admin.js')
+          s = p.read_text(encoding='utf-8')
+          old = '''    try{\n      let savedId=row?.id;let r;\n      if(row) r=await supabase.from(m.table).update(payload).eq("id",row.id);\n      else {r=await supabase.from(m.table).insert(payload).select("id").single();savedId=r.data?.id;}\n      if(r.error)throw r.error;\n\n      const imageField=m.fields.find(f=>f[2]==="file-image");\n      if(imageField){\n        const [imageKey]=imageField;const file=fd.get(`${imageKey}_file`);\n        if(file&&file.size){\n          if(!savedId)throw new Error("ID data tidak ditemukan setelah disimpan.");\n          let folder=key;\n          if(key==="teachers")folder="teachers";\n          else if(key==="gallery_images")folder="gallery";\n          else if(key==="news")folder="news";\n          else if(key==="curriculum_activities")folder="activities/curriculum";\n          else if(key==="student_activities")folder="activities/student";\n          else if(key==="achievements")folder="program-unggulan";\n          const path=await uploadPhoto(file,folder,savedId);\n          const u=await supabase.from(m.table).update({[imageKey]:path}).eq("id",savedId);\n          if(u.error)throw u.error;\n        }\n      }\n'''
+          new = '''    try{\n      let savedId=row?.id;let r;\n      const imageField=m.fields.find(f=>f[2]==="file-image");\n      let imagePath=null;\n      if(imageField){\n        const [imageKey]=imageField;const file=fd.get(`${imageKey}_file`);\n        if(file&&file.size){\n          if(!savedId) savedId=crypto.randomUUID();\n          let folder=key;\n          if(key==="teachers")folder="teachers";\n          else if(key==="gallery_images")folder="gallery";\n          else if(key==="news")folder="news";\n          else if(key==="curriculum_activities")folder="activities/curriculum";\n          else if(key==="student_activities")folder="activities/student";\n          else if(key==="achievements")folder="program-unggulan";\n          imagePath=await uploadPhoto(file,folder,savedId);\n          payload[imageKey]=imagePath;\n        }\n      }\n      if(row) r=await supabase.from(m.table).update(payload).eq("id",row.id);\n      else {payload.id=savedId||undefined;r=await supabase.from(m.table).insert(payload).select("id").single();savedId=r.data?.id||savedId;}\n      if(r.error)throw r.error;\n'''
+          if old not in s:
+              raise SystemExit('Target block not found')
+          p.write_text(s.replace(old,new),encoding='utf-8')
+          PY
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add admin.js
+          git diff --cached --quiet && exit 0
+          git commit -m "Fix gallery image upload order"
+          git push
