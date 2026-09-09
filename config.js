@@ -5,21 +5,35 @@ export const SUPABASE_URL = "https://ekkwsbvvfvybreyclmhq.supabase.co";
 
 export const SUPABASE_ANON_KEY = "sb_publishable_VyHcQVq513WaZOaPTuNoog_TUd4Zy2Y";
 
-// Lightbox galeri: foto dapat diklik untuk tampil lebih besar.
+// Fitur tambahan tampilan website.
 if (typeof document !== "undefined") {
-  const lightboxStyle = document.createElement("style");
-  lightboxStyle.textContent = `
-    #galleryLightbox{position:fixed;inset:0;background:rgba(2,8,23,.88);display:none;align-items:center;justify-content:center;padding:20px;z-index:10050;cursor:zoom-out}
-    #galleryLightbox.show{display:flex}
-    #galleryLightbox img{max-width:min(1100px,96vw);max-height:88vh;width:auto;height:auto;object-fit:contain;border-radius:14px;box-shadow:0 25px 80px rgba(0,0,0,.45);cursor:default}
-    #galleryLightbox .gallery-lightbox-close{position:absolute;right:20px;top:18px;width:44px;height:44px;border:0;border-radius:50%;background:rgba(255,255,255,.95);color:#0f172a;font-size:27px;line-height:1;cursor:pointer;box-shadow:0 8px 25px rgba(0,0,0,.25)}
-    #galleryLightbox .gallery-lightbox-caption{position:absolute;left:20px;right:20px;bottom:18px;text-align:center;color:#fff;font-size:13px;text-shadow:0 2px 8px rgba(0,0,0,.7)}
-    #galleryModal .gallery-modal-grid img{cursor:zoom-in;transition:transform .2s ease,box-shadow .2s ease}
-    #galleryModal .gallery-modal-grid img:hover{transform:scale(1.02);box-shadow:0 10px 25px rgba(15,23,42,.15)}
-    @media(max-width:650px){#galleryLightbox{padding:10px}#galleryLightbox img{max-width:96vw;max-height:82vh}#galleryLightbox .gallery-lightbox-close{right:12px;top:12px;width:40px;height:40px;font-size:24px}}
+  const style = document.createElement("style");
+  style.textContent = `
+    /* Tombol detail Kegiatan & Program Unggulan */
+    #activityGrid .card-body,#achievementGrid .card-body{display:flex;flex-direction:column}
+    .activity-read-button,.achievement-read-button{margin-top:12px;width:100%;min-height:42px}
+    @media(max-width:560px){
+      #activityGrid .card-body,#achievementGrid .card-body{padding:16px}
+      .activity-read-button,.achievement-read-button{display:inline-flex!important;visibility:visible!important;opacity:1!important;margin-top:10px}
+    }
+    /* Modal detail Kegiatan/Program */
+    #contentDetailModal{position:fixed;inset:0;background:rgba(15,23,42,.72);display:none;place-items:center;padding:16px;z-index:10020}
+    #contentDetailModal.show{display:grid}
+    #contentDetailModal .content-detail-card{width:min(760px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:24px;padding:28px;position:relative;box-shadow:0 25px 70px rgba(0,0,0,.28)}
+    #contentDetailModal .content-detail-close{position:absolute;right:16px;top:16px;border:0;background:#f1f5f9;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:23px;z-index:2}
+    #contentDetailModal .content-detail-img{width:100%;max-height:390px;object-fit:cover;border-radius:18px;margin-bottom:18px}
+    #contentDetailModal .content-detail-title{font-family:"Plus Jakarta Sans",sans-serif;font-size:30px;line-height:1.3;margin:12px 50px 10px 0}
+    #contentDetailModal .content-detail-text{font-size:15px;line-height:1.9;color:#334155;white-space:pre-line}
+    @media(max-width:560px){
+      #contentDetailModal{padding:10px}
+      #contentDetailModal .content-detail-card{padding:20px;border-radius:20px;max-height:92vh}
+      #contentDetailModal .content-detail-title{font-size:24px}
+      #contentDetailModal .content-detail-img{max-height:280px}
+    }
   `;
-  document.head.appendChild(lightboxStyle);
+  document.head.appendChild(style);
 
+  // Lightbox galeri: foto dapat diklik untuk tampil lebih besar.
   const lightbox = document.createElement("div");
   lightbox.id = "galleryLightbox";
   lightbox.setAttribute("aria-hidden", "true");
@@ -50,7 +64,6 @@ if (typeof document !== "undefined") {
     document.body.style.overflow = "";
   }
 
-  // Event delegation: tetap bekerja meskipun foto galeri dibuat dinamis oleh main.js.
   document.addEventListener("click", (event) => {
     const img = event.target.closest("#galleryModal .gallery-modal-grid img");
     if (img) {
@@ -59,15 +72,84 @@ if (typeof document !== "undefined") {
       openGalleryLightbox(img);
       return;
     }
+    if (event.target === lightbox || event.target.closest(".gallery-lightbox-close")) closeGalleryLightbox();
+  });
 
-    if (event.target === lightbox || event.target.closest(".gallery-lightbox-close")) {
+  // Modal detail untuk Kegiatan dan Program Unggulan.
+  const detailModal = document.createElement("div");
+  detailModal.id = "contentDetailModal";
+  detailModal.setAttribute("aria-hidden", "true");
+  detailModal.innerHTML = `<div class="content-detail-card"><button class="content-detail-close" type="button" aria-label="Tutup">&times;</button><div id="contentDetailBody"></div></div>`;
+  document.body.appendChild(detailModal);
+  const detailBody = detailModal.querySelector("#contentDetailBody");
+
+  function openContentDetail(card) {
+    if (!card || !detailBody) return;
+    const img = card.querySelector(".card-img");
+    const title = card.querySelector("h3")?.textContent?.trim() || "Informasi Sekolah";
+    const tag = card.querySelector(".tag")?.textContent?.trim() || "Informasi";
+    const text = card.querySelector("p")?.textContent?.trim() || "Informasi sekolah.";
+    detailBody.innerHTML = `${img ? `<img class="content-detail-img" src="${img.currentSrc || img.src}" alt="${title.replace(/"/g,"&quot;")}">` : ""}<span class="tag">${tag}</span><h2 class="content-detail-title">${title}</h2><div class="content-detail-text">${text}</div>`;
+    detailModal.classList.add("show");
+    detailModal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeContentDetail() {
+    detailModal.classList.remove("show");
+    detailModal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+  }
+
+  detailModal.addEventListener("click", event => {
+    if (event.target === detailModal || event.target.closest(".content-detail-close")) closeContentDetail();
+  });
+
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") {
+      closeContentDetail();
       closeGalleryLightbox();
     }
   });
 
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && lightbox.classList.contains("show")) {
-      closeGalleryLightbox();
-    }
-  });
+  // Main.js mengisi Kegiatan/Program secara dinamis dari Supabase.
+  // Observer memastikan tombol selalu ditambahkan setelah data selesai dimuat.
+  function addDetailButtons() {
+    [
+      ["activityGrid", "activity-read-button", "Kegiatan"],
+      ["achievementGrid", "achievement-read-button", "Program Unggulan"]
+    ].forEach(([gridId, buttonClass, label]) => {
+      const grid = document.getElementById(gridId);
+      if (!grid) return;
+      grid.querySelectorAll(":scope > .card").forEach(card => {
+        if (card.querySelector("." + buttonClass)) return;
+        const body = card.querySelector(".card-body");
+        if (!body) return;
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `btn btn-primary ${buttonClass}`;
+        button.textContent = "Lihat selengkapnya";
+        button.addEventListener("click", event => {
+          event.preventDefault();
+          event.stopPropagation();
+          openContentDetail(card);
+        });
+        body.appendChild(button);
+      });
+    });
+  }
+
+  const startExtraFeatures = () => {
+    addDetailButtons();
+    const observer = new MutationObserver(addDetailButtons);
+    ["activityGrid", "achievementGrid"].forEach(id => {
+      const grid = document.getElementById(id);
+      if (grid) observer.observe(grid, {childList:true,subtree:true});
+    });
+    setTimeout(addDetailButtons, 300);
+    setTimeout(addDetailButtons, 1000);
+  };
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", startExtraFeatures);
+  else startExtraFeatures();
 }
