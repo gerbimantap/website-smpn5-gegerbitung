@@ -38,7 +38,7 @@ async function load(){
     supabase.from("curriculum_activities").select("*").eq("status","published").order("activity_date",{ascending:false}).limit(6),
     supabase.from("student_activities").select("*").eq("status","published").order("activity_date",{ascending:false}).limit(6),
     supabase.from("achievements").select("*").order("year",{ascending:false}).limit(6),
-    supabase.from("teachers").select("id").eq("is_active", true)
+    supabase.from("teachers").select("id")
   ]);
 
   const s = school || fallback;
