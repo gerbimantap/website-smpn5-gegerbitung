@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Website resmi SMPN 5 Gegerbitung, Kabupaten Sukabumi." />
+  <title>SMPN 5 Gegerbitung</title>
+  <link rel="icon" href="/assets/logo-smpn5-gegerbitung.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--primary:#38bdf8;--primary-dark:#0284c7;--ink:#0f172a;--muted:#64748b;--soft:#f0f9ff;--white:#fff;--line:#e2e8f0}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,system-ui,sans-serif;color:var(--ink);background:#fff}
+    a{text-decoration:none;color:inherit}.container{width:min(1120px,92%);margin:auto}.topbar{background:#075985;color:#fff;font-size:13px;padding:9px 0}.topbar .container{display:flex;justify-content:space-between;gap:15px}
+    header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.94);backdrop-filter:blur(14px);border-bottom:1px solid rgba(226,232,240,.8)}
+    .nav{height:76px;display:flex;align-items:center;justify-content:space-between}.brand{display:flex;align-items:center;gap:12px}.brand img{width:52px;height:52px;object-fit:contain}.brand strong{font-family:"Plus Jakarta Sans";font-size:17px}.brand small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+    nav{display:flex;align-items:center;gap:22px;font-size:14px;font-weight:600}nav a:hover{color:var(--primary-dark)}.btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 17px;border-radius:12px;font-weight:700;border:0;cursor:pointer}.btn-primary{background:var(--primary-dark);color:#fff}.btn-soft{background:var(--soft);color:#0369a1}.mobile-btn{display:none;background:none;border:0;font-size:25px}
+    .hero{background:linear-gradient(135deg,#e0f2fe 0%,#f8fdff 52%,#fff 100%);padding:72px 0 62px;overflow:hidden}.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:35px;align-items:center}.eyebrow{display:inline-block;background:#fff;border:1px solid #bae6fd;color:#0369a1;padding:7px 11px;border-radius:99px;font-size:12px;font-weight:800}.hero h1{font-family:"Plus Jakarta Sans";font-size:clamp(38px,5vw,64px);line-height:1.05;margin:18px 0}.hero h1 span{color:var(--primary-dark)}.hero p{font-size:17px;line-height:1.8;color:var(--muted);max-width:650px}.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:25px}.hero-card{background:#fff;border:1px solid #bae6fd;border-radius:28px;padding:25px;box-shadow:0 25px 60px rgba(2,132,199,.12)}.hero-card img{display:block;width:180px;height:180px;object-fit:contain;margin:auto}.hero-card h3{text-align:center;margin:10px 0 5px}.hero-card p{text-align:center;font-size:13px;margin:0}
+    section{padding:75px 0}.section-head{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:28px}.section-head h2{font-family:"Plus Jakarta Sans";font-size:30px;margin:8px 0}.section-head p{color:var(--muted);margin:0}.grid{display:grid;gap:20px}.stats{grid-template-columns:repeat(4,1fr);margin-top:-5px}.stat{padding:24px;background:#fff;border:1px solid var(--line);border-radius:18px;text-align:center}.stat b{font-size:30px;color:var(--primary-dark);display:block}.stat span{font-size:13px;color:var(--muted)}
+    .cards{grid-template-columns:repeat(3,1fr)}.card{border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#fff}.card-img{width:100%;height:190px;object-fit:cover;background:#e0f2fe}.card-body{padding:20px}.tag{font-size:11px;font-weight:800;color:#0369a1;background:#e0f2fe;padding:6px 9px;border-radius:99px}.card h3{font-size:18px;line-height:1.35;margin:14px 0 8px}.card p{color:var(--muted);font-size:13px;line-height:1.7}.split{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:center}.panel{background:var(--soft);border-radius:28px;padding:34px}.panel h2{font-family:"Plus Jakarta Sans";font-size:30px;margin-top:0}.panel p{color:var(--muted);line-height:1.9}.list{display:grid;gap:12px}.list-item{display:flex;gap:12px;align-items:flex-start;padding:15px;border:1px solid var(--line);border-radius:14px}.icon{width:34px;height:34px;border-radius:10px;background:#e0f2fe;display:grid;place-items:center;color:#0369a1;font-weight:800;flex:0 0 auto}
+    .principal{background:linear-gradient(135deg,#075985,#0284c7);color:#fff}.principal p{color:#e0f2fe}.principal .quote{font-size:22px;line-height:1.6;font-weight:600}.gallery{grid-template-columns:repeat(4,1fr)}.gallery img{width:100%;height:210px;object-fit:cover;border-radius:16px}.cta{background:#e0f2fe;border-radius:30px;padding:45px;text-align:center}.cta h2{font-family:"Plus Jakarta Sans";font-size:32px;margin:0 0 10px}.cta p{color:#475569;margin-bottom:22px}
+    footer{background:#0f172a;color:#cbd5e1;padding:50px 0 25px}.footer-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:35px}.footer-brand{color:#fff;font-weight:800;font-size:18px}.footer-grid h4{color:#fff;margin-top:0}.footer-grid p,.footer-grid a{font-size:13px;line-height:1.8}.copyright{border-top:1px solid #334155;margin-top:30px;padding-top:20px;font-size:12px;text-align:center}
+    .empty{padding:30px;text-align:center;color:var(--muted);border:1px dashed #cbd5e1;border-radius:15px}.loading{text-align:center;padding:40px;color:var(--muted)}
+    @media(max-width:850px){nav{display:none}.mobile-btn{display:block}.hero-grid,.split{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.cards{grid-template-columns:1fr 1fr}.gallery{grid-template-columns:1fr 1fr}.footer-grid{grid-template-columns:1fr}.topbar .container{display:none}}
+    @media(max-width:560px){.cards{grid-template-columns:1fr}.gallery{grid-template-columns:1fr 1fr}.hero{padding-top:45px}.stats{grid-template-columns:1fr 1fr}.section-head{display:block}.section-head .btn{margin-top:15px}}
+  </style>
+</head>
+<body>
+  <div class="topbar"><div class="container"><span>Website Resmi SMPN 5 Gegerbitung</span><span>Kabupaten Sukabumi</span></div></div>
+  <header><div class="container nav">
+    <a class="brand" href="#beranda"><img src="/assets/logo-smpn5-gegerbitung.png" alt="Logo SMPN 5 Gegerbitung"><div><strong>SMPN 5 Gegerbitung</strong><small>Unggul • Berkarakter • Berprestasi</small></div></a>
+    <nav>
+      <a href="#profil">Profil</a><a href="#berita">Berita</a><a href="#kegiatan">Kegiatan</a><a href="#prestasi">Prestasi</a><a href="#galeri">Galeri</a><a href="#ppdb">PPDB</a><a class="btn btn-primary" href="/admin.html">Admin</a>
+    </nav>
+    <button class="mobile-btn" onclick="alert('Gunakan menu desktop atau buka halaman dari tautan yang tersedia.')">☰</button>
+  </div></header>
+
+  <main>
+    <section id="beranda" class="hero"><div class="container hero-grid">
+      <div><span class="eyebrow">SEKOLAH MENENGAH PERTAMA</span><h1>Selamat Datang di <span>SMPN 5 Gegerbitung</span></h1>
+      <p>Membangun generasi yang berkarakter, berprestasi, berwawasan luas, dan siap menghadapi masa depan dengan semangat belajar yang positif.</p>
+      <div class="hero-actions"><a class="btn btn-primary" href="#profil">Jelajahi Sekolah</a><a class="btn btn-soft" href="#berita">Lihat Berita</a></div></div>
+      <div class="hero-card"><img src="/assets/logo-smpn5-gegerbitung.png" alt="Logo sekolah"><h3>SMPN 5 Gegerbitung</h3><p>Kp. Cimonteng, Desa Caringin, Kecamatan Gegerbitung, Kabupaten Sukabumi</p></div>
+    </div></section>
+
+    <section style="padding:25px 0 10px"><div class="container grid stats">
+      <div class="stat"><b id="statTeachers">-</b><span>Guru & Tendik</span></div><div class="stat"><b id="statStudents">-</b><span>Siswa</span></div><div class="stat"><b id="statAchievements">-</b><span>Prestasi</span></div><div class="stat"><b id="statActivities">-</b><span>Kegiatan</span></div>
+    </div></section>
+
+    <section id="profil"><div class="container split"><div class="panel"><span class="tag">TENTANG SEKOLAH</span><h2 id="schoolName">SMPN 5 Gegerbitung</h2><p id="schoolIntro">SMPN 5 Gegerbitung merupakan sekolah menengah pertama di Kabupaten Sukabumi yang berkomitmen memberikan pendidikan berkualitas dan membangun karakter peserta didik.</p><a class="btn btn-primary" href="#visi">Visi & Misi</a></div><div class="list">
+      <div class="list-item"><div class="icon">✓</div><div><b>Visi</b><p id="vision" style="margin:5px 0;color:#64748b;font-size:13px">Belum diatur melalui dashboard admin.</p></div></div>
+      <div class="list-item"><div class="icon">✓</div><div><b>Misi</b><p id="mission" style="margin:5px 0;color:#64748b;font-size:13px">Belum diatur melalui dashboard admin.</p></div></div>
+      <div class="list-item"><div class="icon">⌖</div><div><b>Alamat</b><p style="margin:5px 0;color:#64748b;font-size:13px">Kp. Cimonteng Rt 15/5, Desa Caringin, Kecamatan Gegerbitung, Kabupaten Sukabumi</p></div></div>
+    </div></div></section>
+
+    <section id="visi" style="background:#f8fafc"><div class="container"><div class="section-head"><div><span class="tag">KEPEMIMPINAN</span><h2>Sambutan Kepala Sekolah</h2></div></div><div class="panel principal"><p class="quote" id="principalMessage">Selamat datang di website resmi SMPN 5 Gegerbitung. Mari bersama membangun lingkungan pendidikan yang aman, inspiratif, dan berprestasi.</p><p id="principalName">Nengsri Rohimah, Munazah, S.Pd., M.Pd.</p></div></div></section>
+
+    <section id="berita"><div class="container"><div class="section-head"><div><span class="tag">INFORMASI</span><h2>Berita & Kegiatan Terbaru</h2><p>Informasi terbaru dari SMPN 5 Gegerbitung.</p></div></div><div id="newsGrid" class="grid cards"><div class="loading">Memuat berita...</div></div></div></section>
+
+    <section id="kegiatan" style="background:#f8fafc"><div class="container"><div class="section-head"><div><span class="tag">AKTIVITAS</span><h2>Kegiatan Sekolah</h2></div></div><div id="activityGrid" class="grid cards"><div class="loading">Memuat kegiatan...</div></div></div></section>
+
+    <section id="prestasi"><div class="container"><div class="section-head"><div><span class="tag">PENCAPAIAN</span><h2>Prestasi Sekolah</h2></div></div><div id="achievementGrid" class="grid cards"><div class="loading">Memuat prestasi...</div></div></div></section>
+
+    <section id="galeri" style="background:#f8fafc"><div class="container"><div class="section-head"><div><span class="tag">DOKUMENTASI</span><h2>Galeri</h2></div></div><div id="galleryGrid" class="grid gallery"><div class="loading">Memuat galeri...</div></div></div></section>
+
+    <section id="ppdb"><div class="container"><div class="cta"><span class="tag">PENERIMAAN PESERTA DIDIK BARU</span><h2>PPDB SMPN 5 Gegerbitung</h2><p>Informasi persyaratan, jadwal, jalur pendaftaran, dan tautan pendaftaran akan ditampilkan di sini.</p><a class="btn btn-primary" href="/ppdb.html">Informasi PPDB</a></div></div></section>
+  </main>
+
+  <footer><div class="container footer-grid"><div><div class="footer-brand">SMPN 5 Gegerbitung</div><p>Kp. Cimonteng Rt 15/5, Desa Caringin, Kecamatan Gegerbitung, Kabupaten Sukabumi.</p><p>📧 smpn5gegerbitung@gmail.com</p></div><div><h4>Menu</h4><p><a href="#profil">Profil Sekolah</a><br><a href="#berita">Berita</a><br><a href="#galeri">Galeri</a><br><a href="#ppdb">PPDB</a></p></div><div><h4>Admin</h4><p><a href="/admin.html">Masuk Dashboard</a></p></div></div><div class="container copyright">© 2026 SMPN 5 Gegerbitung. Semua hak dilindungi.</div></footer>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
