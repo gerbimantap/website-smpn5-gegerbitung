@@ -21,3 +21,63 @@ function showGallery(album){ensureGalleryModal();const body=el("galleryModalBody
 function closeGallery(){const m=el("galleryModal");if(m){m.classList.remove("show");m.setAttribute("aria-hidden","true");document.body.style.overflow=""}}
 async function load(){if(!configured){el("newsGrid").innerHTML=`<div class="empty">Supabase belum dikonfigurasi.</div>`;return}const [{data:school},{data:news},{data:cur},{data:stu},{data:ach},{data:teachers,error:teacherError}]=await Promise.all([supabase.from("school_settings").select("*").limit(1).maybeSingle(),supabase.from("news").select("*").eq("status","published").order("published_at",{ascending:false}).limit(6),supabase.from("curriculum_activities").select("*").eq("status","published").order("activity_date",{ascending:false}).limit(6),supabase.from("student_activities").select("*").eq("status","published").order("activity_date",{ascending:false}).limit(6),supabase.from("achievements").select("*").order("year",{ascending:false}).limit(6),supabase.from("teachers").select("*").eq("is_active",true).order("sort_order",{ascending:true}).order("name",{ascending:true})]);const s=school||fallback;el("schoolName").textContent=s.school_name||fallback.school_name;el("principalName").textContent=s.principal_name||fallback.principal_name;el("vision").textContent=s.vision||fallback.vision;el("mission").textContent=s.mission||fallback.mission;el("principalMessage").textContent=s.principal_message||fallback.principal_message;el("statTeachers").textContent=teacherError?"-":(teachers?.length??0);const studentCount=await supabase.from("students").select("id",{count:"exact",head:true});el("statStudents").textContent=studentCount.count??"-";el("statAchievements").textContent=ach?.length??"-";el("statActivities").textContent=((cur||[]).length+(stu||[]).length)||"-";el("teacherGrid").innerHTML=teacherError?`<div class="empty">Kolom foto guru belum siap.</div>`:(teachers?.length?teachers.map(teacherCard).join(""):`<div class="empty">Belum ada data guru & tendik yang aktif.</div>`);if(!teacherError)el("teacherGrid").querySelectorAll("[data-teacher-id]").forEach(btn=>btn.addEventListener("click",()=>showTeacher(teachers.find(t=>String(t.id)===btn.dataset.teacherId))));el("newsGrid").innerHTML=news?.length?news.map((x,i)=>card(x,"news",i)).join(""):`<div class="empty">Belum ada berita.</div>`;if(news?.length){el("newsGrid").querySelectorAll(".news-read-button").forEach(btn=>btn.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();showNews(news[Number(btn.dataset.newsIndex)])}));el("newsGrid").querySelectorAll(".card-clickable").forEach(cardEl=>cardEl.addEventListener("click",e=>{if(e.target.closest(".news-read-button"))return;showNews(news[Number(cardEl.dataset.newsIndex)])}));}const activities=[...(cur||[]),...(stu||[])].slice(0,6);el("activityGrid").innerHTML=activities.length?activities.map(x=>card(x,"activity")).join(""):`<div class="empty">Belum ada kegiatan.</div>`;el("achievementGrid").innerHTML=ach?.length?ach.map(x=>card(x,"achievement")).join(""):`<div class="empty">Belum ada program unggulan.</div>`;const {data:albums}=await supabase.from("gallery_albums").select("*,gallery_images(*)").eq("is_published",true).order("event_date",{ascending:false}).limit(8);el("galleryGrid").innerHTML=albums?.length?albums.map((album,i)=>{const images=(album.gallery_images||[]).filter(x=>x.image_path);const cover=images[0];return `<article class="card gallery-album-card"><div style="position:relative">${cover?`<img class="card-img" src="${imageUrl(cover.image_path)}" alt="${esc(album.title||"Galeri sekolah")}" onerror="this.src='./logo%20sekolah.jpeg'">`:""}</div><div class="card-body"><span class="tag">Galeri</span><h3>${esc(album.title||"Galeri Sekolah")}</h3><p>${images.length} foto${album.event_date?` • ${new Date(album.event_date).toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"})}`:""}</p><button type="button" class="btn btn-primary gallery-read-button" data-gallery-index="${i}">Lihat selengkapnya</button></div></article>`}).join(""):`<div class="empty">Belum ada foto galeri.</div>`;if(albums?.length){el("galleryGrid").querySelectorAll(".gallery-read-button").forEach(btn=>btn.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();showGallery(albums[Number(btn.dataset.galleryIndex)])}))}}
 ensureNewsModal();ensureGalleryModal();el("teacherModalClose")?.addEventListener("click",closeTeacher);el("teacherModal")?.addEventListener("click",e=>{if(e.target.id==="teacherModal")closeTeacher()});document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeTeacher();closeNews();closeGallery()}});load().catch(err=>console.error(err));
+
+// Menu hamburger HP: tampilkan menu navigasi dan tutup kembali setelah pilihan diklik.
+const mobileMenuBtn=document.querySelector('.mobile-btn');
+const desktopNav=document.querySelector('header nav');
+if(mobileMenuBtn&&desktopNav){
+  mobileMenuBtn.onclick=()=>{
+    const open=desktopNav.style.display==='flex';
+    if(open){
+      desktopNav.style.display='none';
+      mobileMenuBtn.textContent='☰';
+      mobileMenuBtn.setAttribute('aria-expanded','false');
+    }else{
+      desktopNav.style.display='flex';
+      desktopNav.style.position='absolute';
+      desktopNav.style.top='76px';
+      desktopNav.style.left='0';
+      desktopNav.style.right='0';
+      desktopNav.style.flexDirection='column';
+      desktopNav.style.alignItems='stretch';
+      desktopNav.style.gap='4px';
+      desktopNav.style.background='#fff';
+      desktopNav.style.padding='12px 4%';
+      desktopNav.style.borderBottom='1px solid #e2e8f0';
+      desktopNav.style.boxShadow='0 12px 30px rgba(15,23,42,.12)';
+      desktopNav.style.zIndex='25';
+      desktopNav.querySelectorAll('a').forEach(a=>{
+        a.style.padding='12px 10px';
+        a.style.borderRadius='10px';
+      });
+      mobileMenuBtn.textContent='✕';
+      mobileMenuBtn.setAttribute('aria-expanded','true');
+    }
+  };
+  desktopNav.querySelectorAll('a').forEach(link=>link.addEventListener('click',()=>{
+    if(window.innerWidth<=850){
+      desktopNav.style.display='none';
+      mobileMenuBtn.textContent='☰';
+      mobileMenuBtn.setAttribute('aria-expanded','false');
+    }
+  }));
+  window.addEventListener('resize',()=>{
+    if(window.innerWidth>850){
+      desktopNav.style.display='';
+      desktopNav.style.position='';
+      desktopNav.style.top='';
+      desktopNav.style.left='';
+      desktopNav.style.right='';
+      desktopNav.style.flexDirection='';
+      desktopNav.style.alignItems='';
+      desktopNav.style.gap='';
+      desktopNav.style.background='';
+      desktopNav.style.padding='';
+      desktopNav.style.borderBottom='';
+      desktopNav.style.boxShadow='';
+      desktopNav.style.zIndex='';
+      mobileMenuBtn.textContent='☰';
+      mobileMenuBtn.setAttribute('aria-expanded','false');
+    }
+  });
+}
