@@ -1,0 +1,44 @@
+name: Tambahkan tombol Program Unggulan
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-program:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tambahkan tombol dan modal Program Unggulan
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('main.js')
+          s=p.read_text(encoding='utf-8')
+          old='el("achievementGrid").innerHTML=ach?.length?ach.map(x=>card(x,"achievement")).join(""):`<div class="empty">Belum ada program unggulan.</div>`;'
+          new='''el("achievementGrid").innerHTML=ach?.length?ach.map((x,i)=>{const title=esc(x.title||"Program Unggulan"),text=stripHtml(x.description||x.content||"Program unggulan sekolah."),img=x.image_path;return `<article class="card"><img class="card-img" src="${imageUrl(img)}" alt="${title}" onerror="this.src='./logo%20sekolah.jpeg'"><div class="card-body"><span class="tag">${esc(x.category||"Program Unggulan")}</span><h3>${title}</h3><p>${text.slice(0,180)}${text.length>180?"…":""}</p><button type="button" class="btn btn-primary program-read-button" data-program-index="${i}">Lihat selengkapnya</button></div></article>`}).join(""):`<div class="empty">Belum ada program unggulan.</div>`;if(ach?.length){el("achievementGrid").querySelectorAll(".program-read-button").forEach(btn=>btn.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();showProgram(ach[Number(btn.dataset.programIndex)])}))}'''
+          if old not in s:
+              raise SystemExit('target Program Unggulan tidak ditemukan')
+          s=s.replace(old,new,1)
+          marker='function closeGallery(){const m=el("galleryModal");'
+          if 'function ensureProgramModal()' not in s:
+              insert='''function ensureProgramModal(){const modal=el("programModal");if(modal){bindProgramModal(modal);return}const style=document.createElement("style");style.textContent=`#programModal{position:fixed;inset:0;background:rgba(15,23,42,.72);display:none;place-items:center;padding:20px;z-index:9999}#programModal.show{display:grid}#programModal .program-modal-card{width:min(820px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:24px;padding:30px;box-shadow:0 25px 70px rgba(0,0,0,.25)}#programModal .program-modal-img{width:100%;max-height:400px;object-fit:cover;border-radius:18px;margin-bottom:20px}#programModal .program-modal-title{font-size:30px;line-height:1.3;margin:0 0 8px}#programModal .program-modal-meta{font-size:13px;color:#64748b;margin-bottom:20px}#programModal .program-modal-content{font-size:15px;line-height:1.9;color:#334155}@media(max-width:560px){#programModal{padding:10px}#programModal .program-modal-card{padding:20px}#programModal .program-modal-title{font-size:24px}}`;document.head.appendChild(style);const newModal=document.createElement("div");newModal.id="programModal";newModal.innerHTML=`<div class="program-modal-card"><div id="programModalBody"></div></div>`;document.body.appendChild(newModal);bindProgramModal(newModal)}
+function bindProgramModal(modal){if(!modal.dataset.bound){modal.dataset.bound="1";modal.addEventListener("click",e=>{if(!e.target.closest(".program-modal-card")){closeProgram()}})}}
+function showProgram(item){ensureProgramModal();const body=el("programModalBody");if(!body||!item)return;const title=esc(item.title||"Program Unggulan"),img=item.image_path,category=esc(item.category||"Program Unggulan"),year=item.year?String(item.year):"",content=stripHtml(item.content||item.description||"Informasi program unggulan sekolah.").replace(/\\n/g,"<br>");body.innerHTML=`${img?`<img class="program-modal-img" src="${imageUrl(img)}" alt="${title}" onerror="this.src='./logo%20sekolah.jpeg'">`:""}<span class="tag">${category}</span><h2 class="program-modal-title">${title}</h2>${year?`<div class="program-modal-meta">Tahun ${year}</div>`:""}<div class="program-modal-content">${content}</div>`;el("programModal").classList.add("show");el("programModal").setAttribute("aria-hidden","false");document.body.style.overflow="hidden"}
+function closeProgram(){const m=el("programModal");if(m){m.classList.remove("show");m.setAttribute("aria-hidden","true");document.body.style.overflow=""}}
+'''
+              s=s.replace(marker,insert+marker,1)
+          s=s.replace('ensureNewsModal();ensureGalleryModal();', 'ensureNewsModal();ensureGalleryModal();ensureProgramModal();',1)
+          s=s.replace('closeTeacher();closeNews();closeGallery()', 'closeTeacher();closeNews();closeGallery();closeProgram()',1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Simpan perubahan
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add main.js
+          git diff --cached --quiet || git commit -m "Tambahkan Lihat selengkapnya Program Unggulan"
+          git push
