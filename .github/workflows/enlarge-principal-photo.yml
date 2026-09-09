@@ -1,4 +1,4 @@
-name: Perbesar Foto Kepala Sekolah
+name: Kembalikan Foto Kepala Sekolah ke Awal
 
 on:
   push:
@@ -8,13 +8,13 @@ permissions:
   contents: write
 
 jobs:
-  enlarge-photo:
+  restore-photo:
     runs-on: ubuntu-latest
-    if: ${{ !startsWith(github.event.head_commit.message, 'Perbaiki foto Kepala Sekolah applied') }}
+    if: ${{ !startsWith(github.event.head_commit.message, 'Kembalikan foto Kepala Sekolah applied') }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Jadikan foto kotak tanpa background tambahan
+      - name: Hapus perubahan ukuran foto Kepala Sekolah
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -23,31 +23,25 @@ jobs:
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
 
-          # Aturan terakhir adalah yang menang karena muncul paling bawah.
-          # Ubah contain menjadi cover agar foto benar-benar memenuhi kotak,
-          # tanpa area biru/background kosong di dalam kotak.
-          pattern = r'\.principal img\{display:block;width:min\(360px,100%\);height:360px!important;object-fit:contain!important;object-position:center;background:transparent;margin:0 auto 26px;border-radius:16px;box-shadow:0 18px 45px rgba\(15,23,42,.18\)\}'
-          replacement = '.principal img{display:block;width:min(360px,100%);height:360px!important;object-fit:cover!important;object-position:center;background:transparent;margin:0 auto 26px;border-radius:16px;box-shadow:0 18px 45px rgba(15,23,42,.18)}'
-
-          s2, n = re.subn(pattern, replacement, s, count=1)
-          if n == 0:
-              raise SystemExit('Aturan CSS foto Kepala Sekolah tidak ditemukan')
-
-          # Pastikan versi mobile juga tetap kotak.
-          s2 = re.sub(
-              r'@media\(max-width:560px\)\{\.principal img\{width:min\(240px,100%\);height:300px\}\}',
-              '@media(max-width:560px){.principal img{width:min(300px,100%);height:300px!important}}',
-              s2,
-              count=1
+          # Hapus aturan tambahan yang sebelumnya disisipkan khusus untuk memperbesar foto.
+          s = re.sub(
+              r'\n\s*/\* Foto Kepala Sekolah diperbesar \*/\s*\.principal img\{[^}]+\}\s*@media\(max-width:560px\)\{\.principal img\{[^}]+\}\}',
+              '', s, count=1
           )
 
-          p.write_text(s2, encoding='utf-8')
+          # Kembalikan aturan .principal img yang sempat ditambahkan pada aturan utama.
+          s = re.sub(
+              r'\.principal img\{display:block;width:min\(360px,100%\);height:420px!important;object-fit:cover;object-position:center;margin:0 auto 26px;border-radius:24px;box-shadow:0 20px 50px rgba\(15,23,42,.22\)\}@media\(max-width:850px\)\{\.principal img\{width:min\(300px,100%\);height:360px!important\}\}@media\(max-width:560px\)\{\.principal img\{width:min\(300px,100%\);height:300px!important\}\}',
+              '', s, count=1
+          )
+
+          p.write_text(s, encoding='utf-8')
           PY
 
-      - name: Commit perubahan
+      - name: Commit pengembalian
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git diff --cached --quiet || git commit -m "Perbaiki foto Kepala Sekolah applied"
+          git diff --cached --quiet || git commit -m "Kembalikan foto Kepala Sekolah applied"
           git push
