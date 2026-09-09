@@ -1,0 +1,62 @@
+name: Premium Hero Upgrade
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.head_commit.message, 'Apply premium hero') }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Upgrade hero
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          if 'premium-hero-upgrade' in s:
+              raise SystemExit(0)
+
+          css = r'''\n/* premium-hero-upgrade */
+.topbar{background:linear-gradient(90deg,#082f49,#075985,#0c4a6e);padding:8px 0;font-size:12px;letter-spacing:.2px;box-shadow:0 1px 0 rgba(255,255,255,.08) inset}
+header{transition:.35s ease;background:rgba(255,255,255,.88);box-shadow:0 8px 30px rgba(15,23,42,.05)}
+header.premium-scrolled{background:rgba(255,255,255,.97);box-shadow:0 10px 35px rgba(15,23,42,.12)}
+.nav{height:78px}
+.brand{gap:13px}.brand img{width:50px;height:50px;padding:5px;background:#fff;border-radius:14px;box-shadow:0 8px 22px rgba(2,132,199,.16)}
+.brand strong{letter-spacing:-.3px}.brand small{font-size:10px;letter-spacing:.25px}
+nav{gap:18px}nav>a:not(.btn){position:relative;padding:10px 2px}nav>a:not(.btn)::after{content:"";position:absolute;left:0;right:0;bottom:3px;height:2px;border-radius:99px;background:#0284c7;transform:scaleX(0);transition:.25s}nav>a:not(.btn):hover::after{transform:scaleX(1)}
+nav .btn-primary{padding:11px 18px;border-radius:13px;box-shadow:0 8px 20px rgba(2,132,199,.24);transition:.25s}nav .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 25px rgba(2,132,199,.3)}
+.hero{min-height:650px;padding:90px 0 80px}
+.hero-slide{transform:scale(1.04);transition:opacity 1.5s ease-in-out,transform 8s ease-out;filter:saturate(.95)}
+.hero-slide.active{opacity:1;transform:scale(1)}
+.hero-overlay{background:linear-gradient(90deg,rgba(2,20,36,.86) 0%,rgba(2,20,36,.66) 45%,rgba(2,20,36,.30) 100%)}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:150px;background:linear-gradient(transparent,rgba(2,20,36,.28));pointer-events:none;z-index:1}
+.hero-grid{z-index:3;gap:55px}
+.eyebrow{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.32);color:#bae6fd;backdrop-filter:blur(12px);box-shadow:0 8px 25px rgba(0,0,0,.12);letter-spacing:1px;padding:8px 13px}
+.hero h1{font-size:clamp(42px,5.5vw,70px);letter-spacing:-1.8px;text-shadow:0 5px 25px rgba(0,0,0,.22);margin:20px 0 16px}.hero h1 span{color:#7dd3fc}.hero p{font-size:16px;max-width:650px;color:#e0f2fe;text-shadow:0 2px 12px rgba(0,0,0,.2)}
+.hero-actions{margin-top:28px}.hero-actions .btn{padding:13px 20px;border-radius:13px;transition:.25s}.hero-actions .btn:hover{transform:translateY(-2px)}.hero-actions .btn-primary{box-shadow:0 10px 25px rgba(2,132,199,.3)}.hero-actions .btn-soft{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.35);backdrop-filter:blur(10px)}
+.hero-card{background:rgba(255,255,255,.88);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.72);border-radius:30px;padding:28px;box-shadow:0 25px 70px rgba(0,0,0,.22);transition:.35s}.hero-card:hover{transform:translateY(-5px);box-shadow:0 32px 80px rgba(0,0,0,.28)}.hero-card img{width:170px;height:170px;filter:drop-shadow(0 10px 18px rgba(15,23,42,.12))}.hero-card h3{font-size:19px}.hero-card p{color:#64748b;text-shadow:none}
+.hero-indicator{position:absolute;right:4%;bottom:28px;z-index:4;display:flex;align-items:center;gap:12px;color:#fff;font-size:12px;font-weight:700;letter-spacing:1px}.hero-indicator .line{width:48px;height:2px;background:rgba(255,255,255,.35);border-radius:99px;overflow:hidden}.hero-indicator .fill{display:block;height:100%;width:33%;background:#7dd3fc;transition:transform .4s ease}.hero-indicator .count{min-width:38px}
+@media(max-width:850px){.hero{min-height:720px;padding:65px 0 75px}.hero-grid{gap:30px}.hero-card{max-width:430px;margin:auto}.hero-indicator{right:6%;bottom:18px}.hero-overlay{background:rgba(2,20,36,.64)}}
+@media(max-width:560px){.topbar{font-size:11px}.nav{height:70px}.brand img{width:45px;height:45px}.brand strong{font-size:15px}.hero{min-height:760px;padding:50px 0 70px}.hero h1{font-size:clamp(38px,12vw,52px);letter-spacing:-1px}.hero p{font-size:15px}.hero-card{padding:22px}.hero-card img{width:135px;height:135px}.hero-indicator{font-size:10px}.hero-indicator .line{width:34px}}
+'''
+          s = s.replace('</style>', css + '\n  </style>', 1)
+
+          html = r'''\n      <div class="hero-indicator" aria-hidden="true"><span class="count" id="heroCount">01 / 03</span><span class="line"><i class="fill" id="heroFill"></i></span></div>\n'''
+          s = s.replace('      </div>\n    </section>\n\n    <section style="padding:25px 0 10px">', '      </div>' + html + '    </section>\n\n    <section style="padding:25px 0 10px">', 1)
+
+          js = r'''\n<script>\n(function(){\n  const header=document.querySelector('header');\n  const slides=document.querySelectorAll('.hero-slide');\n  const count=document.getElementById('heroCount');\n  const fill=document.getElementById('heroFill');\n  if(!slides.length)return;\n  let current=0;\n  setInterval(function(){\n    slides[current].classList.remove('active');\n    current=(current+1)%slides.length;\n    slides[current].classList.add('active');\n    if(count)count.textContent=String(current+1).padStart(2,'0')+' / '+String(slides.length).padStart(2,'0');\n    if(fill)fill.style.transform='translateX('+(current*100)+'%)';\n  },5000);\n  window.addEventListener('scroll',function(){header.classList.toggle('premium-scrolled',window.scrollY>20)}, {passive:true});\n})();\n</script>\n'''
+          s = s.replace('<script type="module" src="./main.js"></script>', js + '<script type="module" src="./main.js"></script>', 1)
+          p.write_text(s, encoding='utf-8')\n          PY
+      - name: Commit premium design
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Apply premium hero"
+          git push
