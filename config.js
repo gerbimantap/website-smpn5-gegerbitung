@@ -58,6 +58,38 @@ if (typeof document !== "undefined") {
       #socialSekolah .social-links{width:100%;justify-content:flex-start}
       #socialSekolah .social-link{flex:1;justify-content:center;min-width:145px}
     }
+
+    /* Footer Premium */
+    #footerPremium{position:relative;overflow:hidden;background:linear-gradient(135deg,#071a33 0%,#0f2747 52%,#12345d 100%);color:#fff;padding:58px 0 0}
+    #footerPremium:before{content:"";position:absolute;width:420px;height:420px;border:1px solid rgba(255,255,255,.07);border-radius:50%;right:-170px;top:-210px}
+    #footerPremium:after{content:"";position:absolute;width:300px;height:300px;border:1px solid rgba(255,255,255,.05);border-radius:50%;left:-150px;bottom:-170px}
+    #footerPremium .footer-grid{position:relative;z-index:1;display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:44px}
+    #footerPremium .footer-brand{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+    #footerPremium .footer-logo{width:58px;height:58px;object-fit:contain;border-radius:14px;background:#fff;padding:5px;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+    #footerPremium .footer-school-name{font-family:"Plus Jakarta Sans",sans-serif;font-size:21px;font-weight:800;line-height:1.25;margin:0;color:#fff}
+    #footerPremium .footer-school-sub{font-size:12px;color:rgba(255,255,255,.62);margin-top:4px}
+    #footerPremium .footer-desc{font-size:14px;line-height:1.8;color:rgba(255,255,255,.72);max-width:480px;margin:0}
+    #footerPremium .footer-heading{font-size:14px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#fff;margin:4px 0 16px}
+    #footerPremium .footer-links{display:flex;flex-direction:column;gap:10px}
+    #footerPremium .footer-links a{color:rgba(255,255,255,.7);text-decoration:none;font-size:14px;transition:color .2s ease,transform .2s ease}
+    #footerPremium .footer-links a:hover{color:#fff;transform:translateX(3px)}
+    #footerPremium .footer-contact{display:flex;flex-direction:column;gap:10px;color:rgba(255,255,255,.7);font-size:14px;line-height:1.55}
+    #footerPremium .footer-contact span{display:flex;gap:9px;align-items:flex-start}
+    #footerPremium .footer-socials{display:flex;gap:9px;margin-top:20px}
+    #footerPremium .footer-social{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12);color:#fff;text-decoration:none;font-weight:800;transition:.2s ease}
+    #footerPremium .footer-social:hover{background:#fff;color:#0f2747;transform:translateY(-2px)}
+    #footerPremium .footer-bottom{position:relative;z-index:1;margin-top:48px;padding:18px 0;border-top:1px solid rgba(255,255,255,.1);display:flex;justify-content:space-between;align-items:center;gap:15px;color:rgba(255,255,255,.52);font-size:12px}
+    #footerPremium .footer-bottom strong{color:rgba(255,255,255,.8)}
+    @media(max-width:800px){
+      #footerPremium{padding-top:45px}
+      #footerPremium .footer-grid{grid-template-columns:1fr 1fr;gap:32px}
+      #footerPremium .footer-main{grid-column:1/-1}
+    }
+    @media(max-width:560px){
+      #footerPremium .footer-grid{grid-template-columns:1fr;gap:28px}
+      #footerPremium .footer-main{grid-column:auto}
+      #footerPremium .footer-bottom{flex-direction:column;align-items:flex-start;margin-top:35px}
+    }
   `;
   document.head.appendChild(style);
 
@@ -141,7 +173,6 @@ if (typeof document !== "undefined") {
   });
 
   // Main.js mengisi Kegiatan/Program secara dinamis dari Supabase.
-  // Observer memastikan tombol selalu ditambahkan setelah data selesai dimuat.
   function addDetailButtons() {
     [
       ["activityGrid", "activity-read-button", "Kegiatan"],
@@ -198,8 +229,6 @@ if (typeof document !== "undefined") {
           <p class="video-note">Tonton video sekolah langsung melalui website SMPN 5 Gegerbitung.</p>
         </div>
       </div>`;
-
-    // Letakkan video setelah bagian statistik dan sebelum Profil.
     if (statsSection) statsSection.insertAdjacentElement("afterend", section);
     else profilSection.insertAdjacentElement("beforebegin", section);
   }
@@ -227,19 +256,75 @@ if (typeof document !== "undefined") {
           </a>
         </div>
       </div>`;
-
-    // Letakkan tepat sebelum footer agar menjadi bagian penutup halaman.
     footer.insertAdjacentElement("beforebegin", section);
+  }
+
+  // Footer premium menggantikan tampilan footer lama tanpa mengubah index.html.
+  function addPremiumFooter() {
+    if (document.getElementById("footerPremium")) return;
+    const footer = document.querySelector("footer");
+    if (!footer) return;
+
+    const section = document.createElement("section");
+    section.id = "footerPremium";
+    section.innerHTML = `
+      <div class="container">
+        <div class="footer-grid">
+          <div class="footer-main">
+            <div class="footer-brand">
+              <img class="footer-logo" src="./logo%20sekolah.jpeg" alt="Logo SMPN 5 Gegerbitung">
+              <div>
+                <h2 class="footer-school-name">SMPN 5 Gegerbitung</h2>
+                <div class="footer-school-sub">Unggul • Berkarakter • Berprestasi</div>
+              </div>
+            </div>
+            <p class="footer-desc">Website resmi SMPN 5 Gegerbitung sebagai media informasi, publikasi kegiatan, prestasi, dan layanan pendidikan bagi warga sekolah serta masyarakat.</p>
+            <div class="footer-socials">
+              <a class="footer-social" href="https://youtube.com/@smpn5gegerbitung" target="_blank" rel="noopener noreferrer" aria-label="YouTube">▶</a>
+              <a class="footer-social" href="https://www.instagram.com/smpn_5_gegerbitung" target="_blank" rel="noopener noreferrer" aria-label="Instagram">◎</a>
+            </div>
+          </div>
+          <div>
+            <h3 class="footer-heading">Tautan Cepat</h3>
+            <div class="footer-links">
+              <a href="#beranda">Beranda</a>
+              <a href="#profil">Profil Sekolah</a>
+              <a href="#guru-tendik">Guru & Tendik</a>
+              <a href="#kegiatan">Kegiatan Sekolah</a>
+              <a href="#program-unggulan">Program Unggulan</a>
+              <a href="#galeri">Galeri</a>
+            </div>
+          </div>
+          <div>
+            <h3 class="footer-heading">Informasi</h3>
+            <div class="footer-contact">
+              <span>📍 <span>SMP Negeri 5 Gegerbitung<br>Kabupaten Sukabumi</span></span>
+              <span>🌐 <span>Website Resmi Sekolah</span></span>
+              <span>▶ <span>Channel YouTube Resmi</span></span>
+              <span>◎ <span>Instagram Resmi Sekolah</span></span>
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <span>© 2026 <strong>SMPN 5 Gegerbitung</strong>. All rights reserved.</span>
+          <span>Website Sekolah • Kabupaten Sukabumi</span>
+        </div>
+      </div>`;
+
+    footer.insertAdjacentElement("beforebegin", section);
+    footer.style.display = "none";
   }
 
   const startExtraFeatures = () => {
     addDetailButtons();
     addSchoolVideo();
     addSchoolSocials();
+    addPremiumFooter();
     const observer = new MutationObserver(() => {
       addDetailButtons();
       addSchoolVideo();
       addSchoolSocials();
+      addPremiumFooter();
     });
     ["activityGrid", "achievementGrid"].forEach(id => {
       const grid = document.getElementById(id);
@@ -251,6 +336,8 @@ if (typeof document !== "undefined") {
     setTimeout(addSchoolVideo, 1000);
     setTimeout(addSchoolSocials, 300);
     setTimeout(addSchoolSocials, 1000);
+    setTimeout(addPremiumFooter, 300);
+    setTimeout(addPremiumFooter, 1000);
   };
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", startExtraFeatures);
