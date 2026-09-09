@@ -30,6 +30,18 @@ if (typeof document !== "undefined") {
       #contentDetailModal .content-detail-title{font-size:24px}
       #contentDetailModal .content-detail-img{max-height:280px}
     }
+
+    /* Video YouTube sekolah */
+    #videoSekolah{padding:65px 0;background:#f8fafc}
+    #videoSekolah .video-box{width:min(900px,100%);margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:24px;padding:12px;box-shadow:0 12px 35px rgba(15,23,42,.08)}
+    #videoSekolah .video-frame{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:17px;background:#000}
+    #videoSekolah .video-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+    #videoSekolah .video-note{text-align:center;color:var(--muted);font-size:13px;margin:14px 5px 3px}
+    @media(max-width:560px){
+      #videoSekolah{padding:50px 0}
+      #videoSekolah .video-box{padding:7px;border-radius:18px}
+      #videoSekolah .video-frame{border-radius:13px}
+    }
   `;
   document.head.appendChild(style);
 
@@ -139,15 +151,58 @@ if (typeof document !== "undefined") {
     });
   }
 
+  // Tambahkan video YouTube sekolah ke halaman utama tanpa mengubah struktur index.html.
+  function addSchoolVideo() {
+    if (document.getElementById("videoSekolah")) return;
+    const statsSection = document.querySelector("section .stats")?.closest("section");
+    const profilSection = document.getElementById("profil");
+    if (!profilSection) return;
+
+    const section = document.createElement("section");
+    section.id = "videoSekolah";
+    section.innerHTML = `
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow" style="background:#e0f2fe;border-color:#bae6fd;color:#0369a1">VIDEO SEKOLAH</span>
+            <h2>Video SMPN 5 Gegerbitung</h2>
+            <p>Simak informasi dan berbagai kegiatan sekolah melalui video.</p>
+          </div>
+        </div>
+        <div class="video-box">
+          <div class="video-frame">
+            <iframe
+              src="https://www.youtube.com/embed/ODhVSvRuyPA"
+              title="Video SMPN 5 Gegerbitung"
+              loading="lazy"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen>
+            </iframe>
+          </div>
+          <p class="video-note">Tonton video sekolah langsung melalui website SMPN 5 Gegerbitung.</p>
+        </div>
+      </div>`;
+
+    // Letakkan video setelah bagian statistik dan sebelum Profil.
+    if (statsSection) statsSection.insertAdjacentElement("afterend", section);
+    else profilSection.insertAdjacentElement("beforebegin", section);
+  }
+
   const startExtraFeatures = () => {
     addDetailButtons();
-    const observer = new MutationObserver(addDetailButtons);
+    addSchoolVideo();
+    const observer = new MutationObserver(() => {
+      addDetailButtons();
+      addSchoolVideo();
+    });
     ["activityGrid", "achievementGrid"].forEach(id => {
       const grid = document.getElementById(id);
       if (grid) observer.observe(grid, {childList:true,subtree:true});
     });
     setTimeout(addDetailButtons, 300);
     setTimeout(addDetailButtons, 1000);
+    setTimeout(addSchoolVideo, 300);
+    setTimeout(addSchoolVideo, 1000);
   };
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", startExtraFeatures);
