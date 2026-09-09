@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://gerbimantap.github.io/website-smpn5-gegerbitung/sitemap.xml
