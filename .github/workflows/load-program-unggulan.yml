@@ -1,0 +1,51 @@
+name: Aktifkan Detail Program Unggulan
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Pasang script Program Unggulan
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path("index.html")
+          s = p.read_text(encoding="utf-8")
+          tag = '<script type="module" src="./program-unggulan.js?v=20260909-2"></script>'
+
+          if 'program-unggulan.js' not in s:
+              matches = list(re.finditer(r'<script[^>]+src=["\']main\.js(?:\?[^"\']*)?["\'][^>]*></script>', s))
+              if matches:
+                  m = matches[-1]
+                  s = s[:m.end()] + '\n  ' + tag + s[m.end():]
+              else:
+                  s = s.replace('</body>', '  ' + tag + '\n</body>')
+          else:
+              s = re.sub(r'<script[^>]+src=["\']\./program-unggulan\.js(?:\?[^"\']*)?["\'][^>]*></script>', tag, s)
+
+          p.write_text(s, encoding="utf-8")
+          PY
+
+      - name: Commit perubahan
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "Tidak ada perubahan."
+          else
+            git commit -m "Muat script detail Program Unggulan"
+            git push
+          fi
