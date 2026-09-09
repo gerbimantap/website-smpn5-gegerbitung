@@ -1,6 +1,7 @@
 import { supabase, configured } from "./supabase.js";
 import { SUPABASE_URL } from "./config.js";
 
+// Versi galeri diperbarui: 2026-09-09
 const el=id=>document.getElementById(id);
 const fallback={school_name:"SMPN 5 Gegerbitung",principal_name:"Nengsri Rohimah, Munazah, S.Pd., M.Pd.",vision:"Mewujudkan peserta didik yang berkarakter, berprestasi, mandiri, dan berwawasan.",mission:"Menyelenggarakan pembelajaran yang aktif, inovatif, berkarakter, dan berorientasi pada prestasi.",principal_message:"Selamat datang di website resmi SMPN 5 Gegerbitung. Mari bersama membangun lingkungan pendidikan yang aman, inspiratif, dan berprestasi."};
 function imageUrl(path){if(!path)return "./logo%20sekolah.jpeg";if(String(path).startsWith("http"))return path;return `${SUPABASE_URL}/storage/v1/object/public/school-media/${String(path).replace(/^\/+/,"")}`}
