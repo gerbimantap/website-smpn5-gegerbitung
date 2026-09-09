@@ -109,15 +109,12 @@ function openForm(key,row){
     m.fields.forEach(([k,,t])=>{if(t==="file-image")return;payload[k]=t==="checkbox"?fd.has(k):(fd.get(k)||null);});
     try{
       let savedId=row?.id;let r;
-      if(row) r=await supabase.from(m.table).update(payload).eq("id",row.id);
-      else {r=await supabase.from(m.table).insert(payload).select("id").single();savedId=r.data?.id;}
-      if(r.error)throw r.error;
-
       const imageField=m.fields.find(f=>f[2]==="file-image");
+      let imagePath=null;
       if(imageField){
         const [imageKey]=imageField;const file=fd.get(`${imageKey}_file`);
         if(file&&file.size){
-          if(!savedId)throw new Error("ID data tidak ditemukan setelah disimpan.");
+          if(!savedId) savedId=crypto.randomUUID();
           let folder=key;
           if(key==="teachers")folder="teachers";
           else if(key==="gallery_images")folder="gallery";
@@ -125,11 +122,13 @@ function openForm(key,row){
           else if(key==="curriculum_activities")folder="activities/curriculum";
           else if(key==="student_activities")folder="activities/student";
           else if(key==="achievements")folder="program-unggulan";
-          const path=await uploadPhoto(file,folder,savedId);
-          const u=await supabase.from(m.table).update({[imageKey]:path}).eq("id",savedId);
-          if(u.error)throw u.error;
+          imagePath=await uploadPhoto(file,folder,savedId);
+          payload[imageKey]=imagePath;
         }
       }
+      if(row) r=await supabase.from(m.table).update(payload).eq("id",row.id);
+      else {payload.id=savedId||undefined;r=await supabase.from(m.table).insert(payload).select("id").single();savedId=r.data?.id||savedId;}
+      if(r.error)throw r.error;
       toast("Berhasil disimpan. Foto juga sudah diunggah.");modal.classList.add("hidden");renderModule(key);
     }catch(err){toast(err.message||"Gagal menyimpan data");}
     finally{btn.disabled=false;btn.textContent="Simpan";}
