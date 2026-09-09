@@ -1,0 +1,46 @@
+name: Aktifkan detail Kegiatan Sekolah
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch-index:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Tambahkan kegiatan.js ke index.html
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path("index.html")
+          s = p.read_text(encoding="utf-8")
+          tag = '<script type="module" src="./kegiatan.js?v=20260909-1"></script>'
+
+          if "./kegiatan.js" not in s:
+              s = s.replace("</body>", f"  {tag}\n</body>", 1)
+          else:
+              s = re.sub(r'<script type="module" src="\\./kegiatan\\.js[^\"]*">\\</script>', tag, s)
+
+          p.write_text(s, encoding="utf-8")
+          PY
+
+      - name: Commit perubahan
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "Tidak ada perubahan index.html"
+          else
+            git commit -m "Muat detail Kegiatan Sekolah"
+            git push
+          fi
