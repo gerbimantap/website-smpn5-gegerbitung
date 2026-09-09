@@ -1,0 +1,38 @@
+name: Ganti Prestasi Menjadi Program Unggulan
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.head_commit.message, 'Apply Program Unggulan') }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update index.html
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          replacements = [
+              ('href="#prestasi">Prestasi</a>', 'href="#program-unggulan">Program Unggulan</a>'),
+              ('id="prestasi"', 'id="program-unggulan"'),
+              ('<h2>Prestasi</h2>', '<h2>Program Unggulan</h2>'),
+              ('>Prestasi</span>', '>Program Unggulan</span>'),
+          ]
+          for old, new in replacements:
+              s = s.replace(old, new)
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Apply Program Unggulan"
+          git push
