@@ -17,12 +17,15 @@ function imageUrl(path){
 }
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
 
+function stripHtml(v){return String(v??"").replace(/<[^>]*>/g,"");}
+
 function card(item, type){
   const title = item.title || item.name || "Tanpa judul";
   const text = item.excerpt || item.description || item.content || "Informasi sekolah.";
   const img = item.featured_image_path || item.image_path;
   const tag = item.category || (type==="achievement" ? "Prestasi" : "Kegiatan");
-  return `<article class="card">${img?`<img class="card-img" src="${imageUrl(img)}" alt="${esc(title)}" onerror="this.src='./logo%20sekolah.jpeg'">`:''}<div class="card-body"><span class="tag">${esc(tag)}</span><h3>${esc(title)}</h3><p>${String(text).replace(/<[^>]*>/g,'').slice(0,180)}</p></div></article>`;
+  const clickable = type === "news" && item.id;
+  return `<article class="card${clickable?" card-clickable":""}" ${clickable?`data-news-id="${esc(item.id)}" tabindex="0" role="button" aria-label="Baca berita ${esc(title)}"`:""}>${img?`<img class="card-img" src="${imageUrl(img)}" alt="${esc(title)}" onerror="this.src='./logo%20sekolah.jpeg'">`:''}<div class="card-body"><span class="tag">${esc(tag)}</span><h3>${esc(title)}</h3><p>${stripHtml(text).slice(0,180)}${stripHtml(text).length>180?"…":""}</p>${clickable?`<span class="read-more">Baca selengkapnya →</span>`:""}</div></article>`;
 }
 
 function teacherCard(t){
@@ -71,6 +74,30 @@ function closeTeacher(){
   if(m){m.classList.remove("show");m.setAttribute("aria-hidden","true")}
 }
 
+function showNews(item){
+  const modal=el("newsModal");
+  const body=el("newsModalBody");
+  if(!modal || !body || !item) return;
+  const title=esc(item.title||"Tanpa judul");
+  const img=item.featured_image_path || item.image_path;
+  const date=item.published_at ? new Date(item.published_at).toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"}) : "";
+  const category=esc(item.category||"Berita Sekolah");
+  const content=stripHtml(item.content||item.excerpt||item.description||"Informasi sekolah.").replace(/\n/g,"<br>");
+  body.innerHTML=`
+    ${img?`<img class="news-modal-img" src="${imageUrl(img)}" alt="${title}" onerror="this.src='./logo%20sekolah.jpeg'">`:""}
+    <span class="tag">${category}</span>
+    <h2 class="news-modal-title">${title}</h2>
+    ${date?`<div class="news-modal-date">${date}</div>`:""}
+    <div class="news-modal-content">${content}</div>`;
+  modal.classList.add("show");
+  modal.setAttribute("aria-hidden","false");
+  document.body.style.overflow="hidden";
+}
+function closeNews(){
+  const m=el("newsModal");
+  if(m){m.classList.remove("show");m.setAttribute("aria-hidden","true");document.body.style.overflow=""}
+}
+
 async function load(){
   if(!configured){
     el("newsGrid").innerHTML = `<div class="empty">Supabase belum dikonfigurasi.</div>`;
@@ -114,6 +141,14 @@ async function load(){
   }
 
   el("newsGrid").innerHTML = news?.length ? news.map(x=>card(x,"news")).join("") : `<div class="empty">Belum ada berita.</div>`;
+  if(news?.length){
+    el("newsGrid").querySelectorAll("[data-news-id]").forEach(cardEl=>{
+      const item=news.find(x=>String(x.id)===cardEl.dataset.newsId);
+      cardEl.addEventListener("click",()=>showNews(item));
+      cardEl.addEventListener("keydown",e=>{if(e.key==="Enter" || e.key===" "){e.preventDefault();showNews(item)}});
+    });
+  }
+
   const activities = [...(cur||[]),...(stu||[])].slice(0,6);
   el("activityGrid").innerHTML = activities.length ? activities.map(x=>card(x,"activity")).join("") : `<div class="empty">Belum ada kegiatan.</div>`;
   el("achievementGrid").innerHTML = ach?.length ? ach.map(x=>card(x,"achievement")).join("") : `<div class="empty">Belum ada prestasi.</div>`;
@@ -125,5 +160,7 @@ async function load(){
 
 el("teacherModalClose")?.addEventListener("click",closeTeacher);
 el("teacherModal")?.addEventListener("click",e=>{if(e.target.id==="teacherModal")closeTeacher()});
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closeTeacher()});
+el("newsModalClose")?.addEventListener("click",closeNews);
+el("newsModal")?.addEventListener("click",e=>{if(e.target.id==="newsModal")closeNews()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeTeacher();closeNews()}});
 load().catch(err=>console.error(err));
