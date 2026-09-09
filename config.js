@@ -42,6 +42,22 @@ if (typeof document !== "undefined") {
       #videoSekolah .video-box{padding:7px;border-radius:18px}
       #videoSekolah .video-frame{border-radius:13px}
     }
+
+    /* Bagian Ikuti Kami */
+    #socialSekolah{padding:34px 0 38px;background:#0f2747;color:#fff}
+    #socialSekolah .social-inner{display:flex;align-items:center;justify-content:space-between;gap:24px}
+    #socialSekolah .social-title{margin:0 0 6px;font-family:"Plus Jakarta Sans",sans-serif;font-size:22px;color:#fff}
+    #socialSekolah .social-desc{margin:0;color:rgba(255,255,255,.72);font-size:14px}
+    #socialSekolah .social-links{display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end}
+    #socialSekolah .social-link{display:inline-flex;align-items:center;gap:9px;padding:12px 18px;border-radius:999px;text-decoration:none;font-weight:700;font-size:14px;background:#fff;color:#0f2747;transition:transform .2s ease,box-shadow .2s ease}
+    #socialSekolah .social-link:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.18)}
+    #socialSekolah .social-icon{font-size:19px;line-height:1}
+    @media(max-width:650px){
+      #socialSekolah{padding:30px 0}
+      #socialSekolah .social-inner{flex-direction:column;align-items:flex-start}
+      #socialSekolah .social-links{width:100%;justify-content:flex-start}
+      #socialSekolah .social-link{flex:1;justify-content:center;min-width:145px}
+    }
   `;
   document.head.appendChild(style);
 
@@ -188,12 +204,42 @@ if (typeof document !== "undefined") {
     else profilSection.insertAdjacentElement("beforebegin", section);
   }
 
+  // Tambahkan tautan resmi YouTube dan Instagram di bagian bawah website.
+  function addSchoolSocials() {
+    if (document.getElementById("socialSekolah")) return;
+    const footer = document.querySelector("footer");
+    if (!footer) return;
+
+    const section = document.createElement("section");
+    section.id = "socialSekolah";
+    section.innerHTML = `
+      <div class="container social-inner">
+        <div>
+          <h2 class="social-title">Ikuti SMPN 5 Gegerbitung</h2>
+          <p class="social-desc">Dapatkan informasi, kegiatan, dan kabar terbaru sekolah melalui media sosial resmi kami.</p>
+        </div>
+        <div class="social-links">
+          <a class="social-link" href="https://youtube.com/@smpn5gegerbitung" target="_blank" rel="noopener noreferrer" aria-label="YouTube SMPN 5 Gegerbitung">
+            <span class="social-icon">▶</span><span>YouTube</span>
+          </a>
+          <a class="social-link" href="https://www.instagram.com/smpn_5_gegerbitung" target="_blank" rel="noopener noreferrer" aria-label="Instagram SMPN 5 Gegerbitung">
+            <span class="social-icon">◎</span><span>Instagram</span>
+          </a>
+        </div>
+      </div>`;
+
+    // Letakkan tepat sebelum footer agar menjadi bagian penutup halaman.
+    footer.insertAdjacentElement("beforebegin", section);
+  }
+
   const startExtraFeatures = () => {
     addDetailButtons();
     addSchoolVideo();
+    addSchoolSocials();
     const observer = new MutationObserver(() => {
       addDetailButtons();
       addSchoolVideo();
+      addSchoolSocials();
     });
     ["activityGrid", "achievementGrid"].forEach(id => {
       const grid = document.getElementById(id);
@@ -203,6 +249,8 @@ if (typeof document !== "undefined") {
     setTimeout(addDetailButtons, 1000);
     setTimeout(addSchoolVideo, 300);
     setTimeout(addSchoolVideo, 1000);
+    setTimeout(addSchoolSocials, 300);
+    setTimeout(addSchoolSocials, 1000);
   };
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", startExtraFeatures);
