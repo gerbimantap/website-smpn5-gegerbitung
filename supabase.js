@@ -9,5 +9,7 @@ if (typeof window !== "undefined") {
     if (document.getElementById("achievementGrid")) {
       setTimeout(() => import("./program-unggulan-fix.js?v=20260910-1"), 1800);
     }
+    // Berita utama otomatis tampil hanya pada 10 September 2026.
+    setTimeout(() => import("./featured-news.js?v=20260910-1"), 250);
   });
 }
