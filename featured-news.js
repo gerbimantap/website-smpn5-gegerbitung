@@ -11,7 +11,7 @@ function imageUrl(path){
   return `${SUPABASE_URL}/storage/v1/object/public/school-media/${String(path).replace(/^\/+/,"")}`;
 }
 function esc(value){
-  return String(value ?? "").replace(/[&<>\"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",\"":"&quot;","'":"&#039;"}[c]));
+  return String(value ?? "").replace(/[&<>\"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));
 }
 function stripHtml(value){return String(value ?? "").replace(/<[^>]*>/g,"");}
 function jakartaDate(){return new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Jakarta",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());}
@@ -37,7 +37,21 @@ function addStyles(){
   document.head.appendChild(style);
 }
 
+function openOriginalNews(){
+  const newsSection=document.getElementById("berita");
+  if(newsSection) newsSection.scrollIntoView({behavior:"smooth",block:"start"});
+  let tries=0;
+  const timer=setInterval(()=>{
+    tries++;
+    const cards=[...document.querySelectorAll("#newsGrid .card-clickable")];
+    const match=cards.find(card=>card.querySelector("h3")?.textContent?.trim().toLowerCase()===FEATURED_TITLE.toLowerCase());
+    if(match){match.click();clearInterval(timer);}
+    if(tries>=15) clearInterval(timer);
+  },200);
+}
+
 async function initFeaturedNews(){
+  // Setelah tanggal berganti, elemen tidak dibuat sama sekali.
   if(jakartaDate()!==FEATURED_DATE) return;
   if(!SUPABASE_URL || !SUPABASE_ANON_KEY) return;
   const {data:item,error}=await supabase.from("news").select("*").eq("title",FEATURED_TITLE).eq("status","published").order("published_at",{ascending:false}).limit(1).maybeSingle();
@@ -52,7 +66,7 @@ async function initFeaturedNews(){
   const date=item.published_at?new Date(item.published_at).toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"}):"10 September 2026";
   section.innerHTML=`<div class="container"><div class="featured-today-card"><div class="featured-today-content"><span class="featured-today-badge">🏆 BERITA UTAMA HARI INI</span><h2>${esc(item.title)}</h2><p>${esc(excerpt.slice(0,260))}${excerpt.length>260?"…":""}</p><div class="featured-today-date">${esc(date)} • SMPN 5 Gegerbitung</div><button type="button" class="featured-today-button">Baca Berita Selengkapnya →</button></div><div class="featured-today-image-wrap"><img class="featured-today-image" src="${imageUrl(item.featured_image_path)}" alt="${esc(item.title)}" onerror="this.src='./logo%20sekolah.jpeg'"></div></div></div>`;
   main.insertBefore(section,main.firstElementChild);
-  section.querySelector(".featured-today-button")?.addEventListener("click",()=>document.getElementById("berita")?.scrollIntoView({behavior:"smooth",block:"start"}));
+  section.querySelector(".featured-today-button")?.addEventListener("click",openOriginalNews);
 }
 
 if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",initFeaturedNews,{once:true});
