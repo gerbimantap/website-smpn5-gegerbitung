@@ -49,4 +49,28 @@ body.news-open #sp5-page-layer,body.activity-open #sp5-page-layer{pointer-events
   window.addEventListener('popstate',()=>{if(layer?.classList.contains('open'))closePage(true)});
   document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;const a=document.getElementById('activityModal'),n=document.getElementById('newsModal');if(a?.classList.contains('show')){closeActivity();e.preventDefault();return}if(n?.classList.contains('show')){n.classList.remove('show');n.setAttribute('aria-hidden','true');document.body.classList.remove('news-open');document.body.style.overflow='';e.preventDefault();return}if(layer?.classList.contains('open')){e.preventDefault();closePage()}});
   document.addEventListener('DOMContentLoaded',()=>{setup();const grid=document.getElementById('activityGrid');if(grid){const obs=new MutationObserver(()=>addActivityButtons(document));obs.observe(grid,{childList:true,subtree:true});setTimeout(()=>addActivityButtons(document),500)}},{once:true});
+
+  // Instagram Reel sementara: aktif 24 jam sejak 14 September 2026 pukul 17:25 WIB.
+  function showTemporaryInstagramReel(){
+    const start=new Date('2026-09-14T17:25:00+07:00');
+    const end=new Date('2026-09-15T17:25:00+07:00');
+    const now=new Date();
+    if(now<start||now>=end)return;
+    if(document.getElementById('temporaryInstagramReel'))return;
+    const style=document.createElement('style');
+    style.id='temporaryInstagramReelStyle';
+    style.textContent=`#temporaryInstagramReel{padding:55px 0;background:#f8fafc}#temporaryInstagramReel .reel-box{width:min(540px,100%);margin:auto;background:#fff;border:1px solid #e2e8f0;border-radius:24px;padding:18px;box-shadow:0 15px 40px rgba(15,23,42,.08)}#temporaryInstagramReel h2{text-align:center;font-family:"Plus Jakarta Sans",Inter,sans-serif;font-size:28px;margin:0 0 8px;color:#0f172a}#temporaryInstagramReel p{text-align:center;color:#64748b;font-size:13px;margin:0 0 20px}#temporaryInstagramReel .reel-frame{display:flex;justify-content:center;min-height:500px}`;
+    document.head.appendChild(style);
+    const section=document.createElement('section');
+    section.id='temporaryInstagramReel';
+    section.innerHTML=`<div class="container"><div class="reel-box"><h2>Video Terbaru SMPN 5 Gegerbitung</h2><p>Reel Instagram pilihan sekolah</p><div class="reel-frame"><blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/reel/DdQuN2whwlY/" data-instgrm-version="14" style="background:#FFF;border:0;border-radius:3px;box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15);margin:1px;max-width:540px;min-width:326px;padding:0;width:calc(100% - 2px)"><a href="https://www.instagram.com/reel/DdQuN2whwlY/" target="_blank" rel="noopener">Lihat video di Instagram</a></blockquote></div></div></div>`;
+    const main=document.querySelector('main');
+    const hero=document.getElementById('beranda');
+    if(main&&hero)hero.insertAdjacentElement('afterend',section);
+    const script=document.createElement('script');
+    script.async=true;
+    script.src='https://www.instagram.com/embed.js';
+    document.body.appendChild(script);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',showTemporaryInstagramReel,{once:true});else showTemporaryInstagramReel();
 })();
