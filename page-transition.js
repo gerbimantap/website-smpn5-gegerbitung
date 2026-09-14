@@ -1,105 +1,52 @@
-/* SMPN 5 Gegerbitung - Full Screen Page Transition */
+/* SMPN 5 Gegerbitung - Full Screen Page Transition + Activity Detail */
 (() => {
   const allowed = new Set(['profil','guru-tendik','berita','kegiatan','program-unggulan','galeri','ppdb']);
-  let layer = null;
-  let previousHash = '';
-  let previousScroll = 0;
-  let closing = false;
-
-  const css = `
-    #sp5-page-layer{position:fixed;inset:0;background:#f8fafc;z-index:10050;transform:translateY(105%);opacity:0;visibility:hidden;transition:transform .48s cubic-bezier(.22,.61,.36,1),opacity .28s ease;overflow:auto;overscroll-behavior:contain}
-    #sp5-page-layer.open{transform:translateY(0);opacity:1;visibility:visible}
-    #sp5-page-layer .sp5-page-bar{position:sticky;top:0;z-index:5;background:rgba(255,255,255,.96);backdrop-filter:blur(14px);border-bottom:1px solid #e2e8f0;box-shadow:0 4px 18px rgba(15,23,42,.06)}
-    #sp5-page-layer .sp5-page-bar-inner{width:min(1120px,92%);min-height:70px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:14px}
-    #sp5-page-layer .sp5-page-brand{display:flex;align-items:center;gap:10px;font-weight:800;color:#0f172a}
-    #sp5-page-layer .sp5-page-brand img{width:42px;height:42px;object-fit:contain}
-    #sp5-page-layer .sp5-page-brand small{display:block;color:#64748b;font-size:10px;font-weight:600;margin-top:2px}
-    #sp5-page-layer .sp5-back{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:12px;background:#e0f2fe;color:#0369a1;padding:11px 15px;font:700 14px Inter,system-ui,sans-serif;cursor:pointer}
-    #sp5-page-layer .sp5-back:hover{background:#bae6fd}
-    #sp5-page-layer .sp5-page-content{width:min(1120px,92%);margin:0 auto;padding:8px 0 70px}
-    #sp5-page-layer .sp5-page-content>section{display:block;padding-top:58px}
-    #sp5-page-layer .sp5-page-content>section:first-child{padding-top:40px}
-    #sp5-page-layer .sp5-page-content .container{width:100%}
-    #sp5-page-layer .sp5-page-content .hero{min-height:0}
-    #sp5-page-layer .sp5-page-content footer{margin-top:20px}
-    #newsModal,#activityModal{z-index:2147483000 !important;pointer-events:auto !important;}
-    #newsModal.show,#activityModal.show{display:grid !important;}
-    #newsModal .news-modal-card,#activityModal .news-modal-card{max-height:90vh !important;max-height:calc(100dvh - 40px) !important;overflow-y:auto !important;overflow-x:hidden !important;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;position:relative;}
-    #newsModal .news-modal-content,#activityModal .news-modal-content{overflow:visible !important;}
-    body.news-open,body.activity-open{overflow:hidden}
-    body.news-open #sp5-page-layer,body.activity-open #sp5-page-layer{pointer-events:none !important;}
-    #sp5-page-layer .activityGrid .card,#sp5-page-layer #activityGrid .card,#activityGrid .card{cursor:pointer}
-    @media(max-width:560px){#sp5-page-layer .sp5-page-bar-inner{min-height:62px}#sp5-page-layer .sp5-page-brand strong{font-size:14px}#sp5-page-layer .sp5-page-brand small{font-size:9px}#sp5-page-layer .sp5-back{padding:9px 12px;font-size:13px}#newsModal,#activityModal{padding:10px !important}#newsModal .news-modal-card,#activityModal .news-modal-card{max-height:calc(100dvh - 20px) !important;padding:20px}}
-  `;
-
-  function setup(){
-    if(document.getElementById('sp5-page-style')) return;
-    const style=document.createElement('style');style.id='sp5-page-style';style.textContent=css;document.head.appendChild(style);
-    layer=document.createElement('div');layer.id='sp5-page-layer';layer.setAttribute('aria-hidden','true');
-    layer.innerHTML=`<div class="sp5-page-bar"><div class="sp5-page-bar-inner"><div class="sp5-page-brand"><img src="./logo%20sekolah.jpeg" alt="Logo SMPN 5 Gegerbitung"><div><strong>SMPN 5 Gegerbitung</strong><small>Halaman Informasi Sekolah</small></div></div><button class="sp5-back" type="button" aria-label="Kembali ke halaman utama">← Kembali</button></div></div><div class="sp5-page-content"></div>`;
-    document.body.appendChild(layer);layer.querySelector('.sp5-back').addEventListener('click',closePage);layer.addEventListener('click',handleLayerClick);
-  }
-
-  function titleFor(section){return section.querySelector('h2')?.textContent?.trim()||section.id.replaceAll('-',' ')}
-  function openPage(id,push=true){const target=document.getElementById(id);if(!target||!allowed.has(id))return false;setup();if(layer.classList.contains('open')&&layer.dataset.id===id)return true;previousScroll=window.scrollY;previousHash=location.hash;const content=layer.querySelector('.sp5-page-content');const clone=target.cloneNode(true);clone.removeAttribute('id');content.innerHTML='';content.appendChild(clone);layer.dataset.id=id;layer.querySelector('.sp5-page-brand small').textContent=titleFor(target);document.body.classList.add('sp5-lock');layer.setAttribute('aria-hidden','false');requestAnimationFrame(()=>layer.classList.add('open'));if(push)history.pushState({sp5Page:id},'',`#${id}`);layer.scrollTop=0;return true}
-  function closePage(fromPop=false){if(!layer||!layer.classList.contains('open')||closing)return;closing=true;layer.classList.remove('open');layer.setAttribute('aria-hidden','true');setTimeout(()=>{document.body.classList.remove('sp5-lock');closing=false;if(!fromPop)history.pushState({},'',previousHash||location.pathname);window.scrollTo({top:previousScroll,behavior:'instant'});layer.querySelector('.sp5-page-content').innerHTML=''},480)}
-
-  function handleLayerClick(e){
-    const back=e.target.closest('.sp5-back');if(back)return;
-    const teacher=e.target.closest('[data-teacher-id]');if(teacher){const original=document.querySelector(`[data-teacher-id="${CSS.escape(teacher.dataset.teacherId)}"]`);if(original&&original!==teacher)original.click();return}
-    const news=e.target.closest('[data-news-index]');if(news){const original=document.querySelector(`[data-news-index="${CSS.escape(news.dataset.newsIndex)}"]`);if(original&&original!==news)original.click();return}
-    const gallery=e.target.closest('.gallery-read-button');if(gallery){const index=gallery.dataset.galleryIndex;const original=document.querySelector(`.gallery-read-button[data-gallery-index="${CSS.escape(index)}"]`);if(original&&original!==gallery)original.click();return}
-    const activity=e.target.closest('#activityGrid .card');if(activity){openActivityFromCard(activity);return}
-  }
-
-  async function getSupabase(){return await import('./supabase.js')}
+  let layer=null, previousHash='', previousScroll=0, closing=false;
+  const css=`
+#sp5-page-layer{position:fixed;inset:0;background:#f8fafc;z-index:10050;transform:translateY(105%);opacity:0;visibility:hidden;transition:transform .48s cubic-bezier(.22,.61,.36,1),opacity .28s ease;overflow:auto;overscroll-behavior:contain}
+#sp5-page-layer.open{transform:translateY(0);opacity:1;visibility:visible}
+#sp5-page-layer .sp5-page-bar{position:sticky;top:0;z-index:5;background:rgba(255,255,255,.96);backdrop-filter:blur(14px);border-bottom:1px solid #e2e8f0;box-shadow:0 4px 18px rgba(15,23,42,.06)}
+#sp5-page-layer .sp5-page-bar-inner{width:min(1120px,92%);min-height:70px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:14px}
+#sp5-page-layer .sp5-page-brand{display:flex;align-items:center;gap:10px;font-weight:800;color:#0f172a}
+#sp5-page-layer .sp5-page-brand img{width:42px;height:42px;object-fit:contain}
+#sp5-page-layer .sp5-page-brand small{display:block;color:#64748b;font-size:10px;font-weight:600;margin-top:2px}
+#sp5-page-layer .sp5-back{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:12px;background:#e0f2fe;color:#0369a1;padding:11px 15px;font:700 14px Inter,system-ui,sans-serif;cursor:pointer}
+#sp5-page-layer .sp5-page-content{width:min(1120px,92%);margin:0 auto;padding:8px 0 70px}
+#sp5-page-layer .sp5-page-content>section{display:block;padding-top:58px}
+#sp5-page-layer .sp5-page-content>section:first-child{padding-top:40px}
+#sp5-page-layer .sp5-page-content .container{width:100%}
+#sp5-page-layer .sp5-page-content .hero{min-height:0}
+#sp5-page-layer .sp5-page-content footer{margin-top:20px}
+#newsModal,#activityModal{position:fixed;inset:0;background:rgba(15,23,42,.72);display:none;place-items:center;padding:20px;z-index:2147483000!important;pointer-events:auto!important}
+#newsModal.show,#activityModal.show{display:grid!important}
+#newsModal .news-modal-card,#activityModal .activity-modal-card{width:min(820px,100%);max-height:calc(100dvh - 40px);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;background:#fff;border-radius:24px;position:relative;padding:30px;box-shadow:0 25px 70px rgba(0,0,0,.25)}
+#newsModal .news-modal-img,#activityModal .activity-modal-img{width:100%;max-height:380px;object-fit:cover;border-radius:18px;margin-bottom:20px}
+#newsModal .news-modal-title,#activityModal .activity-modal-title{font-family:"Plus Jakarta Sans",Inter,sans-serif;font-size:32px;line-height:1.25;margin:15px 0 8px}
+#newsModal .news-modal-date,#activityModal .activity-modal-date{font-size:13px;color:#64748b;margin-bottom:20px}
+#newsModal .news-modal-content,#activityModal .activity-modal-content{font-size:15px;line-height:1.9;color:#334155;white-space:normal;overflow-wrap:anywhere}
+#activityModal .activity-modal-content p{margin:0 0 14px}
+.activity-read-button{margin-top:10px}
+body.news-open,body.activity-open{overflow:hidden}
+body.news-open #sp5-page-layer,body.activity-open #sp5-page-layer{pointer-events:none!important}
+#activityGrid .card{cursor:pointer}
+@media(max-width:560px){#sp5-page-layer .sp5-page-bar-inner{min-height:62px}#sp5-page-layer .sp5-page-brand strong{font-size:14px}#sp5-page-layer .sp5-page-brand small{font-size:9px}#sp5-page-layer .sp5-back{padding:9px 12px;font-size:13px}#newsModal,#activityModal{padding:10px}#newsModal .news-modal-card,#activityModal .activity-modal-card{max-height:calc(100dvh - 20px);padding:20px}#newsModal .news-modal-title,#activityModal .activity-modal-title{font-size:25px}}
+`;
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
   const clean=v=>String(v??'').replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<style[\s\S]*?<\/style>/gi,'');
   const imageUrl=path=>{if(!path)return '';if(String(path).startsWith('http'))return String(path);return `./${String(path).replace(/^\/+/, '')}`};
-
-  function ensureActivityModal(){
-    let modal=document.getElementById('activityModal');
-    if(!modal){modal=document.createElement('div');modal.id='activityModal';modal.innerHTML='<div class="news-modal-card"><div id="activityModalBody"></div></div>';document.body.appendChild(modal);}
-    if(modal.parentElement!==document.body)document.body.appendChild(modal);
-    return modal;
-  }
-
-  async function openActivityFromCard(card){
-    const title=(card.querySelector('h3')?.textContent||'').trim();if(!title)return;
-    try{
-      const {supabase}=await getSupabase();
-      let item=null;
-      const q1=await supabase.from('curriculum_activities').select('*').eq('title',title).eq('status','published').limit(1).maybeSingle();
-      if(q1.error)throw q1.error;
-      item=q1.data;
-      if(!item){const q2=await supabase.from('student_activities').select('*').eq('title',title).eq('status','published').limit(1).maybeSingle();if(q2.error)throw q2.error;item=q2.data;}
-      if(!item){console.warn('Kegiatan tidak ditemukan di Supabase:',title);return;}
-      const modal=ensureActivityModal();
-      const content=clean(item.content||item.description||'Informasi kegiatan belum tersedia.');
-      const date=item.activity_date?new Date(item.activity_date).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}):'';
-      const img=item.featured_image_path||item.image_path;
-      const imgHtml=img&&String(img).startsWith('http')?`<img class="news-modal-img" src="${esc(img)}" alt="${esc(item.title)}">`:'';
-      document.getElementById('activityModalBody').innerHTML=`${imgHtml}<span class="tag">Kegiatan</span><h2 class="news-modal-title">${esc(item.title)}</h2>${date?`<div class="news-modal-date">${date}</div>`:''}<div class="news-modal-content">${esc(content).replace(/\r?\n/g,'<br>')}</div>`;
-      modal.classList.add('show');modal.setAttribute('aria-hidden','false');document.body.classList.add('activity-open');document.body.style.overflow='hidden';
-    }catch(err){console.error('Gagal memuat kegiatan lengkap:',err);}
-  }
-
-  async function openFullNews(index){
-    try{
-      const {supabase}=await getSupabase();
-      const {data,error}=await supabase.from('news').select('*').eq('status','published').order('published_at',{ascending:false}).limit(6);
-      if(error)throw error;const item=data?.[Number(index)];if(!item)return false;
-      let modal=document.getElementById('newsModal');if(!modal){modal=document.createElement('div');modal.id='newsModal';modal.innerHTML='<div class="news-modal-card"><div id="newsModalBody"></div></div>';document.body.appendChild(modal)}else if(modal.parentElement!==document.body)document.body.appendChild(modal);
-      const title=esc(item.title||'Tanpa judul'),content=clean(item.content||item.excerpt||item.description||'Informasi sekolah.'),date=item.published_at?new Date(item.published_at).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}):'',category=esc(item.category||'Berita Sekolah'),img=item.featured_image_path||item.image_path;
-      const imgHtml=img&&String(img).startsWith('http')?`<img class="news-modal-img" src="${esc(img)}" alt="${title}">`:'';
-      document.getElementById('newsModalBody').innerHTML=`${imgHtml}<span class="tag">${category}</span><h2 class="news-modal-title">${title}</h2>${date?`<div class="news-modal-date">${date}</div>`:''}<div class="news-modal-content">${esc(content).replace(/\r?\n/g,'<br>')}</div>`;
-      modal.classList.add('show');modal.setAttribute('aria-hidden','false');document.body.classList.add('news-open');document.body.style.overflow='hidden';return true;
-    }catch(err){console.error('Gagal memuat berita lengkap:',err);return false}
-  }
-
+  function setup(){if(document.getElementById('sp5-page-style'))return;const style=document.createElement('style');style.id='sp5-page-style';style.textContent=css;document.head.appendChild(style);layer=document.createElement('div');layer.id='sp5-page-layer';layer.setAttribute('aria-hidden','true');layer.innerHTML=`<div class="sp5-page-bar"><div class="sp5-page-bar-inner"><div class="sp5-page-brand"><img src="./logo%20sekolah.jpeg" alt="Logo SMPN 5 Gegerbitung"><div><strong>SMPN 5 Gegerbitung</strong><small>Halaman Informasi Sekolah</small></div></div><button class="sp5-back" type="button">← Kembali</button></div></div><div class="sp5-page-content"></div>`;document.body.appendChild(layer);layer.querySelector('.sp5-back').addEventListener('click',closePage);layer.addEventListener('click',handleLayerClick)}
+  function titleFor(section){return section.querySelector('h2')?.textContent?.trim()||section.id.replaceAll('-',' ')}
+  function openPage(id,push=true){const target=document.getElementById(id);if(!target||!allowed.has(id))return false;setup();previousScroll=window.scrollY;previousHash=location.hash;const content=layer.querySelector('.sp5-page-content');const clone=target.cloneNode(true);clone.removeAttribute('id');content.innerHTML='';content.appendChild(clone);layer.dataset.id=id;layer.querySelector('.sp5-page-brand small').textContent=titleFor(target);document.body.classList.add('sp5-lock');layer.setAttribute('aria-hidden','false');requestAnimationFrame(()=>layer.classList.add('open'));if(push)history.pushState({sp5Page:id},'',`#${id}`);layer.scrollTop=0;return true}
+  function closePage(fromPop=false){if(!layer||!layer.classList.contains('open')||closing)return;closing=true;layer.classList.remove('open');layer.setAttribute('aria-hidden','true');setTimeout(()=>{document.body.classList.remove('sp5-lock');closing=false;if(!fromPop)history.pushState({},'',previousHash||location.pathname);window.scrollTo({top:previousScroll,behavior:'instant'});layer.querySelector('.sp5-page-content').innerHTML=''},480)}
+  function ensureActivityModal(){let modal=document.getElementById('activityModal');if(!modal){modal=document.createElement('div');modal.id='activityModal';modal.innerHTML='<div class="activity-modal-card"><div id="activityModalBody"></div></div>';document.body.appendChild(modal);modal.addEventListener('click',e=>{if(e.target===modal)closeActivity()})}return modal}
+  function closeActivity(){const m=document.getElementById('activityModal');if(m){m.classList.remove('show');m.setAttribute('aria-hidden','true')}document.body.classList.remove('activity-open');if(!document.getElementById('newsModal')?.classList.contains('show'))document.body.style.overflow=''}
+  async function openActivity(id,title){try{const {supabase}=await import('./supabase.js');let item=null;if(id){const a=await supabase.from('curriculum_activities').select('*').eq('id',id).eq('status','published').maybeSingle();if(a.error)throw a.error;item=a.data;if(!item){const b=await supabase.from('student_activities').select('*').eq('id',id).eq('status','published').maybeSingle();if(b.error)throw b.error;item=b.data}}else if(title){const a=await supabase.from('curriculum_activities').select('*').eq('title',title).eq('status','published').limit(1).maybeSingle();if(a.error)throw a.error;item=a.data;if(!item){const b=await supabase.from('student_activities').select('*').eq('title',title).eq('status','published').limit(1).maybeSingle();if(b.error)throw b.error;item=b.data}}if(!item){console.warn('Kegiatan tidak ditemukan');return}const modal=ensureActivityModal();const img=item.featured_image_path||item.image_path;const date=item.activity_date?new Date(item.activity_date).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}):'';const content=clean(item.content||item.description||'Informasi kegiatan belum tersedia.');const imgHtml=img?`<img class="activity-modal-img" src="${esc(imageUrl(img))}" alt="${esc(item.title||'Kegiatan')}">`:'';document.getElementById('activityModalBody').innerHTML=`${imgHtml}<span class="tag">Kegiatan</span><h2 class="activity-modal-title">${esc(item.title||'Tanpa judul')}</h2>${date?`<div class="activity-modal-date">${date}</div>`:''}<div class="activity-modal-content">${esc(content).replace(/\r?\n/g,'<br>')}</div>`;modal.classList.add('show');modal.setAttribute('aria-hidden','false');document.body.classList.add('activity-open');document.body.style.overflow='hidden'}catch(err){console.error('Gagal memuat kegiatan lengkap:',err)}}
+  function addActivityButtons(root=document){const grid=root.querySelector('#activityGrid')||document.getElementById('activityGrid');if(!grid)return;grid.querySelectorAll('.card').forEach(card=>{if(card.querySelector('.activity-read-button'))return;const title=card.querySelector('h3')?.textContent?.trim();if(!title)return;const body=card.querySelector('.card-body');if(!body)return;const btn=document.createElement('button');btn.type='button';btn.className='btn btn-primary activity-read-button';btn.textContent='Lihat selengkapnya';btn.dataset.activityTitle=title;body.appendChild(btn);})}
+  function handleLayerClick(e){const back=e.target.closest('.sp5-back');if(back)return;const activityButton=e.target.closest('.activity-read-button');if(activityButton){e.preventDefault();e.stopPropagation();openActivity(null,activityButton.dataset.activityTitle);return}const activityCard=e.target.closest('#activityGrid .card');if(activityCard){e.preventDefault();openActivity(null,activityCard.querySelector('h3')?.textContent?.trim());return}const teacher=e.target.closest('[data-teacher-id]');if(teacher){const original=document.querySelector(`[data-teacher-id="${CSS.escape(teacher.dataset.teacherId)}"]`);if(original&&original!==teacher)original.click();return}const news=e.target.closest('[data-news-index]');if(news){const original=document.querySelector(`[data-news-index="${CSS.escape(news.dataset.newsIndex)}"]`);if(original&&original!==news)original.click();return}const gallery=e.target.closest('.gallery-read-button');if(gallery){const original=document.querySelector(`.gallery-read-button[data-gallery-index="${CSS.escape(gallery.dataset.galleryIndex)}"]`);if(original&&original!==gallery)original.click()}}
+  async function openFullNews(index){try{const {supabase}=await import('./supabase.js');const {data,error}=await supabase.from('news').select('*').eq('status','published').order('published_at',{ascending:false}).limit(6);if(error)throw error;const item=data?.[Number(index)];if(!item)return;let modal=document.getElementById('newsModal');if(!modal){modal=document.createElement('div');modal.id='newsModal';modal.innerHTML='<div class="news-modal-card"><div id="newsModalBody"></div></div>';document.body.appendChild(modal)}const title=esc(item.title||'Tanpa judul'),content=clean(item.content||item.excerpt||item.description||'Informasi sekolah.'),date=item.published_at?new Date(item.published_at).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}):'',category=esc(item.category||'Berita Sekolah'),img=item.featured_image_path||item.image_path;const imgHtml=img?`<img class="news-modal-img" src="${esc(imageUrl(img))}" alt="${title}">`:'';document.getElementById('newsModalBody').innerHTML=`${imgHtml}<span class="tag">${category}</span><h2 class="news-modal-title">${title}</h2>${date?`<div class="news-modal-date">${date}</div>`:''}<div class="news-modal-content">${esc(content).replace(/\r?\n/g,'<br>')}</div>`;modal.classList.add('show');modal.setAttribute('aria-hidden','false');document.body.classList.add('news-open');document.body.style.overflow='hidden'}catch(err){console.error('Gagal memuat berita lengkap:',err)}}
   document.addEventListener('click',e=>{const button=e.target.closest('.news-read-button');if(!button)return;e.preventDefault();e.stopImmediatePropagation();openFullNews(button.dataset.newsIndex)},true);
   document.addEventListener('click',e=>{const link=e.target.closest('a[href]');if(!link||link.target==='_blank'||link.hasAttribute('download'))return;const raw=link.getAttribute('href');if(!raw||!raw.startsWith('#'))return;const id=raw.slice(1);if(!allowed.has(id))return;e.preventDefault();e.stopPropagation();openPage(id,true)},true);
   window.addEventListener('popstate',()=>{if(layer?.classList.contains('open'))closePage(true)});
-  document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;for(const id of ['newsModal','activityModal']){const modal=document.getElementById(id);if(modal?.classList.contains('show')){modal.classList.remove('show');modal.setAttribute('aria-hidden','true');document.body.classList.remove('news-open','activity-open');document.body.style.overflow='';e.preventDefault();return}}if(layer?.classList.contains('open')){e.preventDefault();closePage()}});
-  document.addEventListener('DOMContentLoaded',()=>{for(const id of ['newsModal','activityModal']){const modal=document.getElementById(id);if(modal&&modal.parentElement!==document.body)document.body.appendChild(modal)}setup()},{once:true});
+  document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;const a=document.getElementById('activityModal'),n=document.getElementById('newsModal');if(a?.classList.contains('show')){closeActivity();e.preventDefault();return}if(n?.classList.contains('show')){n.classList.remove('show');n.setAttribute('aria-hidden','true');document.body.classList.remove('news-open');document.body.style.overflow='';e.preventDefault();return}if(layer?.classList.contains('open')){e.preventDefault();closePage()}});
+  document.addEventListener('DOMContentLoaded',()=>{setup();const grid=document.getElementById('activityGrid');if(grid){const obs=new MutationObserver(()=>addActivityButtons(document));obs.observe(grid,{childList:true,subtree:true});setTimeout(()=>addActivityButtons(document),500)}},{once:true});
 })();
