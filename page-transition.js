@@ -22,6 +22,11 @@
     #sp5-page-layer .sp5-page-content .container{width:100%}
     #sp5-page-layer .sp5-page-content .hero{min-height:0}
     #sp5-page-layer .sp5-page-content footer{margin-top:20px}
+
+    /* Perbaikan modal berita: modal berada di atas page-transition dan isi dapat discroll. */
+    #newsModal{z-index:11000 !important;}
+    #newsModal .news-modal-card{max-height:90vh !important;overflow-y:auto !important;overflow-x:hidden !important;-webkit-overflow-scrolling:touch;touch-action:pan-y;}
+
     body.sp5-lock{overflow:hidden}
     @media(max-width:560px){#sp5-page-layer .sp5-page-bar-inner{min-height:62px}#sp5-page-layer .sp5-page-brand strong{font-size:14px}#sp5-page-layer .sp5-page-brand small{font-size:9px}#sp5-page-layer .sp5-back{padding:9px 12px;font-size:13px}}
   `;
