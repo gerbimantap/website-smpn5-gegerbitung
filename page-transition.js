@@ -23,12 +23,18 @@
     #sp5-page-layer .sp5-page-content .hero{min-height:0}
     #sp5-page-layer .sp5-page-content footer{margin-top:20px}
 
-    /* Perbaikan modal berita: modal berada di atas page-transition dan isi dapat discroll. */
-    #newsModal{z-index:11000 !important;}
-    #newsModal .news-modal-card{max-height:90vh !important;overflow-y:auto !important;overflow-x:hidden !important;-webkit-overflow-scrolling:touch;touch-action:pan-y;}
+    /* Modal berita selalu berada di atas page transition dan mempunyai scroll sendiri. */
+    #newsModal{z-index:2147483000 !important;pointer-events:auto !important;}
+    #newsModal.show{display:grid !important;}
+    #newsModal .news-modal-card{max-height:90vh !important;max-height:calc(100dvh - 40px) !important;overflow-y:scroll !important;overflow-x:hidden !important;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;position:relative;}
+    #newsModal .news-modal-content{overflow:visible !important;}
+    body.news-open #sp5-page-layer{pointer-events:none !important;}
 
     body.sp5-lock{overflow:hidden}
-    @media(max-width:560px){#sp5-page-layer .sp5-page-bar-inner{min-height:62px}#sp5-page-layer .sp5-page-brand strong{font-size:14px}#sp5-page-layer .sp5-page-brand small{font-size:9px}#sp5-page-layer .sp5-back{padding:9px 12px;font-size:13px}}
+    @media(max-width:560px){#sp5-page-layer .sp5-page-bar-inner{min-height:62px}#sp5-page-layer .sp5-page-brand strong{font-size:14px}#sp5-page-layer .sp5-page-brand small{font-size:9px}#sp5-page-layer .sp5-back{padding:9px 12px;font-size:13px}
+      #newsModal{padding:10px !important;}
+      #newsModal .news-modal-card{max-height:calc(100dvh - 20px) !important;padding:20px;}
+    }
   `;
 
   function setup(){
@@ -141,6 +147,24 @@
       closePage();
     }
   });
+
+  // Pastikan modal berita yang sudah ada di index.html dipindahkan menjadi child langsung body.
+  // Ini mencegah modal mewarisi stacking/overflow dari section yang sedang di-clone.
+  document.addEventListener('DOMContentLoaded',()=>{
+    const modal=document.getElementById('newsModal');
+    if(modal && modal.parentElement!==document.body) document.body.appendChild(modal);
+  },{once:true});
+
+  // Saat modal berita dibuka, beri tanda pada body agar layer halaman tidak menangkap pointer.
+  const observeNews=()=>{
+    const modal=document.getElementById('newsModal');
+    if(!modal) return;
+    const sync=()=>document.body.classList.toggle('news-open',modal.classList.contains('show'));
+    new MutationObserver(sync).observe(modal,{attributes:true,attributeFilter:['class']});
+    sync();
+  };
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',observeNews,{once:true});
+  else observeNews();
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',setup,{once:true});
   else setup();
