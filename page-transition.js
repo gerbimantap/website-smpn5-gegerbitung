@@ -23,10 +23,9 @@
     #sp5-page-layer .sp5-page-content .hero{min-height:0}
     #sp5-page-layer .sp5-page-content footer{margin-top:20px}
 
-    /* Modal berita selalu berada di atas page transition dan mempunyai scroll sendiri. */
     #newsModal{z-index:2147483000 !important;pointer-events:auto !important;}
     #newsModal.show{display:grid !important;}
-    #newsModal .news-modal-card{max-height:90vh !important;max-height:calc(100dvh - 40px) !important;overflow-y:scroll !important;overflow-x:hidden !important;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;position:relative;}
+    #newsModal .news-modal-card{max-height:90vh !important;max-height:calc(100dvh - 40px) !important;overflow-y:auto !important;overflow-x:hidden !important;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;position:relative;}
     #newsModal .news-modal-content{overflow:visible !important;}
     body.news-open #sp5-page-layer{pointer-events:none !important;}
 
@@ -94,9 +93,7 @@
     setTimeout(()=>{
       document.body.classList.remove('sp5-lock');
       closing=false;
-      if(!fromPop){
-        history.pushState({},'',previousHash || location.pathname);
-      }
+      if(!fromPop){ history.pushState({},'',previousHash || location.pathname); }
       window.scrollTo({top:previousScroll,behavior:'instant'});
       layer.querySelector('.sp5-page-content').innerHTML='';
     },480);
@@ -125,6 +122,54 @@
     }
   }
 
+  // FIX BERITA: tombol "Baca selengkapnya" sekarang mengambil kolom content
+  // langsung dari Supabase, bukan ringkasan/excerpt pada kartu berita.
+  async function openFullNews(index){
+    try{
+      const {supabase}=await import('./supabase.js');
+      const {data,error}=await supabase.from('news').select('*').eq('status','published').order('published_at',{ascending:false}).limit(6);
+      if(error) throw error;
+      const item=data?.[Number(index)];
+      if(!item) return false;
+
+      let modal=document.getElementById('newsModal');
+      if(!modal){
+        modal=document.createElement('div');
+        modal.id='newsModal';
+        modal.innerHTML='<div class="news-modal-card"><div id="newsModalBody"></div></div>';
+        document.body.appendChild(modal);
+      }else if(modal.parentElement!==document.body){
+        document.body.appendChild(modal);
+      }
+
+      const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+      const strip=v=>String(v??'').replace(/<script[\\s\\S]*?<\\/script>/gi,'').replace(/<style[\\s\\S]*?<\\/style>/gi,'');
+      const image=path=>{if(!path)return '';if(String(path).startsWith('http'))return path;return `https://placeholder.invalid/${String(path).replace(/^\\/+/, '')}`};
+      const title=esc(item.title||'Tanpa judul');
+      const content=strip(item.content||item.excerpt||item.description||'Informasi sekolah.');
+      const date=item.published_at?new Date(item.published_at).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}):'';
+      const category=esc(item.category||'Berita Sekolah');
+      const img=item.featured_image_path||item.image_path;
+      const imgHtml=img&&String(img).startsWith('http')?`<img class="news-modal-img" src="${esc(img)}" alt="${title}">`:'';
+      const safeContent=esc(content).replace(/\r?\n/g,'<br>');
+      document.getElementById('newsModalBody').innerHTML=`${imgHtml}<span class="tag">${category}</span><h2 class="news-modal-title">${title}</h2>${date?`<div class="news-modal-date">${date}</div>`:''}<div class="news-modal-content">${safeContent}</div>`;
+      modal.classList.add('show');
+      modal.setAttribute('aria-hidden','false');
+      document.body.classList.add('news-open');
+      document.body.style.overflow='hidden';
+      return true;
+    }catch(err){console.error('Gagal memuat berita lengkap:',err);return false;}
+  }
+
+  // Tangkap tombol berita sebelum listener main.js agar data lengkap dipakai.
+  document.addEventListener('click',e=>{
+    const button=e.target.closest('.news-read-button');
+    if(!button) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    openFullNews(button.dataset.newsIndex);
+  },true);
+
   document.addEventListener('click',e=>{
     const link=e.target.closest('a[href]');
     if(!link || link.target==='_blank' || link.hasAttribute('download')) return;
@@ -137,35 +182,26 @@
     openPage(id,true);
   },true);
 
-  window.addEventListener('popstate',()=>{
-    if(layer?.classList.contains('open')) closePage(true);
-  });
+  window.addEventListener('popstate',()=>{if(layer?.classList.contains('open')) closePage(true);});
 
   document.addEventListener('keydown',e=>{
-    if(e.key==='Escape' && layer?.classList.contains('open')){
-      e.preventDefault();
-      closePage();
+    if(e.key==='Escape'){
+      const modal=document.getElementById('newsModal');
+      if(modal?.classList.contains('show')){
+        modal.classList.remove('show');
+        modal.setAttribute('aria-hidden','true');
+        document.body.classList.remove('news-open');
+        document.body.style.overflow='';
+        e.preventDefault();
+        return;
+      }
+      if(layer?.classList.contains('open')){e.preventDefault();closePage();}
     }
   });
 
-  // Pastikan modal berita yang sudah ada di index.html dipindahkan menjadi child langsung body.
-  // Ini mencegah modal mewarisi stacking/overflow dari section yang sedang di-clone.
   document.addEventListener('DOMContentLoaded',()=>{
     const modal=document.getElementById('newsModal');
     if(modal && modal.parentElement!==document.body) document.body.appendChild(modal);
+    setup();
   },{once:true});
-
-  // Saat modal berita dibuka, beri tanda pada body agar layer halaman tidak menangkap pointer.
-  const observeNews=()=>{
-    const modal=document.getElementById('newsModal');
-    if(!modal) return;
-    const sync=()=>document.body.classList.toggle('news-open',modal.classList.contains('show'));
-    new MutationObserver(sync).observe(modal,{attributes:true,attributeFilter:['class']});
-    sync();
-  };
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',observeNews,{once:true});
-  else observeNews();
-
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',setup,{once:true});
-  else setup();
 })();
