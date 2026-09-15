@@ -1,10 +1,11 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 const SITE_URL = 'https://gerbimantap.github.io/website-smpn5-gegerbitung';
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) throw new Error('SUPABASE_URL/SUPABASE_ANON_KEY belum tersedia');
+const configText = await fs.readFile('./config.js','utf8');
+const SUPABASE_URL = process.env.SUPABASE_URL || configText.match(/SUPABASE_URL\s*=\s*["']([^"']+)["']/)?.[1];
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || configText.match(/SUPABASE_ANON_KEY\s*=\s*["']([^"']+)["']/)?.[1];
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) throw new Error('Konfigurasi Supabase belum tersedia');
 
 const headers = { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` };
 const esc = (v='') => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
