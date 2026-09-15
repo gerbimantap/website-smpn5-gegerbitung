@@ -1,6 +1,9 @@
 name: Generate Share Pages
 
 on:
+  push:
+    paths-ignore:
+      - 'share/**'
   schedule:
     - cron: '*/15 * * * *'
   workflow_dispatch:
